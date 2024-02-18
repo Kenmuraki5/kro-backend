@@ -1,4 +1,3 @@
-// internal/database/db.go
 package database
 
 import (
@@ -10,19 +9,21 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 )
 
-// DynamoDBClient represents a DynamoDB client
 type DynamoDBClient struct {
 	Client *dynamodb.Client
 }
 
-// NewDynamoDBClient creates a new DynamoDB client
 func NewDynamoDBClient() (*DynamoDBClient, error) {
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
-		config.WithRegion("us-east-1"), // Change the region as needed
+		config.WithRegion("localhost"),
+		config.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(
+			func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+				return aws.Endpoint{URL: "http://localhost:8000"}, nil
+			})),
 		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
 			Value: aws.Credentials{
-				AccessKeyID:     "dummy",
-				SecretAccessKey: "dummy",
+				AccessKeyID:     "2dmjs",  // ใส่ access key
+				SecretAccessKey: "puezqo", // ใส่ secret access key
 			},
 		}),
 	)
