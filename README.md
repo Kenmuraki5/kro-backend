@@ -7,7 +7,7 @@ install NoSQL Workbench with this link
 https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.html
 
 
-## setup dynamoDB local server with docker
+## extract file dynamodb_local_server and setup dynamoDB local server with docker
 ```
 cd deployment/docker && docker-compose up
 ```
