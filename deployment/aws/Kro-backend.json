@@ -1,0 +1,128 @@
+{
+  "ModelName": "Kro-backend",
+  "ModelMetadata": {
+    "Author": "",
+    "DateCreated": "Feb 18, 2024, 08:23 PM",
+    "DateLastModified": "Feb 18, 2024, 08:36 PM",
+    "Description": "",
+    "AWSService": "Amazon DynamoDB",
+    "Version": "3.0"
+  },
+  "DataModel": [
+    {
+      "TableName": "game",
+      "KeyAttributes": {
+        "PartitionKey": {
+          "AttributeName": "Id",
+          "AttributeType": "S"
+        }
+      },
+      "NonKeyAttributes": [
+        {
+          "AttributeName": "name",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "stock",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "price",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "image",
+          "AttributeType": "S"
+        }
+      ],
+      "TableData": [
+        {
+          "Id": {
+            "S": ";Mvqggermk"
+          },
+          "name": {
+            "S": "fc24"
+          },
+          "stock": {
+            "S": "1980131566419968"
+          },
+          "price": {
+            "S": "0.20792130148038268"
+          },
+          "image": {
+            "S": "https://valid-ocean.biz"
+          }
+        },
+        {
+          "Id": {
+            "S": "OEM\"\"u<;iI"
+          },
+          "name": {
+            "S": "taken8"
+          },
+          "stock": {
+            "S": "938825052323840"
+          },
+          "price": {
+            "S": "0.5689365207217634"
+          },
+          "image": {
+            "S": "https://mild-evaluation.info"
+          }
+        }
+      ],
+      "DataAccess": {
+        "MySql": {}
+      },
+      "SampleDataFormats": {
+        "Id": [
+          "dataTypes",
+          "String"
+        ],
+        "image": [
+          "identifiers",
+          "URL"
+        ],
+        "name": [
+          "dataTypes",
+          "String"
+        ],
+        "stock": [
+          "dataTypes",
+          "Int"
+        ],
+        "price": [
+          "dataTypes",
+          "Float"
+        ]
+      },
+      "BillingMode": "PROVISIONED",
+      "ProvisionedCapacitySettings": {
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 5,
+          "WriteCapacityUnits": 5
+        },
+        "AutoScalingRead": {
+          "ScalableTargetRequest": {
+            "MinCapacity": 1,
+            "MaxCapacity": 10,
+            "ServiceRole": "AWSServiceRoleForApplicationAutoScaling_DynamoDBTable"
+          },
+          "ScalingPolicyConfiguration": {
+            "TargetValue": 70
+          }
+        },
+        "AutoScalingWrite": {
+          "ScalableTargetRequest": {
+            "MinCapacity": 1,
+            "MaxCapacity": 10,
+            "ServiceRole": "AWSServiceRoleForApplicationAutoScaling_DynamoDBTable"
+          },
+          "ScalingPolicyConfiguration": {
+            "TargetValue": 70
+          }
+        }
+      }
+    }
+  ]
+}

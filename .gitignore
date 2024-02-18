@@ -1,1 +1,2 @@
-/deployment/home
+/deployment/aws/dynamodb_local_latest
+*.DS_Store
