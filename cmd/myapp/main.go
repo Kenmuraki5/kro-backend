@@ -4,7 +4,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/Kenmuraki5/kro-backend.git/internal/gameservice"
+	"github.com/Kenmuraki5/kro-backend.git/internal/game"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,6 +15,6 @@ func main() {
 			"localhost": "8080",
 		})
 	})
-	router.GET("/kro-games", gameservice.GetAllGame) // Use GetAllGame directly as the handler
+	router.GET("/kro-games", game.GetAllGame) // Use GetAllGame directly as the handler
 	router.Run("localhost:8080")
 }

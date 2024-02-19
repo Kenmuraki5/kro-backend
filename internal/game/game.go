@@ -1,5 +1,4 @@
-// internal/gameservice/gameservice.go
-package gameservice
+package game
 
 import (
 	"net/http"
