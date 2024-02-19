@@ -2,30 +2,19 @@
 package main
 
 import (
-	"context"
-	"fmt"
+	"net/http"
 
-	"github.com/Kenmuraki5/kro-backend.git/internal/database"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/Kenmuraki5/kro-backend.git/internal/gameservice"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	// Create a DynamoDB client
-	dynamoDB, err := database.NewDynamoDBClient()
-	if err != nil {
-		panic(err)
-	}
-
-	// Now you can use dynamoDB.Client to interact with DynamoDB
-	// For example, list tables:
-	listTablesInput := &dynamodb.ListTablesInput{}
-	resp, err := dynamoDB.Client.ListTables(context.TODO(), listTablesInput)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("Tables in DynamoDB:")
-	for _, tableName := range resp.TableNames {
-		fmt.Println(tableName)
-	}
+	router := gin.Default()
+	router.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"localhost": "8080",
+		})
+	})
+	router.GET("/kro-games", gameservice.GetAllGame) // Use GetAllGame directly as the handler
+	router.Run("localhost:8080")
 }

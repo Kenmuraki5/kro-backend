@@ -21,3 +21,4 @@ https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.setti
 ```
 go run cmd/myapp/main.go
 ```
+### http://localhost:8080/kro-games
