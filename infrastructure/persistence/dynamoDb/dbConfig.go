@@ -1,4 +1,4 @@
-package database
+package dynamoDb
 
 import (
 	"context"
@@ -22,8 +22,8 @@ func NewDynamoDBClient() (*DynamoDBClient, error) {
 			})),
 		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
 			Value: aws.Credentials{
-				AccessKeyID:     "2dmjs",  // ใส่ access key
-				SecretAccessKey: "puezqo", // ใส่ secret access key
+				AccessKeyID:     "nb2kin", // ใส่ access key
+				SecretAccessKey: "ntg1p",  // ใส่ secret access key
 			},
 		}),
 	)
