@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Kenmuraki5/kro-backend.git/application/interfaces"
+	"github.com/Kenmuraki5/kro-backend.git/domain/entity"
 	"github.com/Kenmuraki5/kro-backend.git/domain/restmodel"
 	"github.com/gin-gonic/gin"
 )
@@ -44,4 +45,32 @@ func (controller *GameController) AddGameHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, addedGame)
+}
+
+func (controller *GameController) UpdateGameHandler(c *gin.Context) {
+	var updatedGame entity.Game
+	if err := c.ShouldBindJSON(&updatedGame); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	games, err := controller.service.UpdateGame(updatedGame)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update game"})
+		return
+	}
+
+	c.JSON(http.StatusOK, games)
+}
+
+func (controller *GameController) DeleteGame(c *gin.Context) {
+	id := c.Param("id")
+
+	err := controller.service.DeleteGame(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete game"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"message": "Game item delete successfully"})
 }

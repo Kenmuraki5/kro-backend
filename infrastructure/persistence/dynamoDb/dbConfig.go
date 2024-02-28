@@ -22,8 +22,8 @@ func NewDynamoDBClient() (*DynamoDBClient, error) {
 			})),
 		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
 			Value: aws.Credentials{
-				AccessKeyID:     "xp565", // ใส่ access key
-				SecretAccessKey: "8ulag", // ใส่ secret access key
+				AccessKeyID:     "1cqeve", // ใส่ access key
+				SecretAccessKey: "xfpz7n", // ใส่ secret access key
 			},
 		}),
 	)

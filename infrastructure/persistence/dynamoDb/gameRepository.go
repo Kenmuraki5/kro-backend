@@ -64,6 +64,47 @@ func (repo *DynamoDBGameRepository) AddGame(game restmodel.Game) (*restmodel.Gam
 	return &game, nil
 }
 
-//update
+// update
+func (repo *DynamoDBGameRepository) UpdateGame(updatedGame entity.Game) (*entity.Game, error) {
+	if updatedGame.Id == "" {
+		return nil, fmt.Errorf("cannot update game without a valid ID")
+	}
 
-//delete
+	item, err := attributevalue.MarshalMap(updatedGame)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = repo.Client.PutItem(context.Background(), &dynamodb.PutItemInput{
+		TableName: aws.String("Games"),
+		Item:      item,
+	})
+	if err != nil {
+		fmt.Printf("Couldn't update item in table. Here's why: %v\n", err)
+		return nil, err
+	}
+
+	return &updatedGame, nil
+}
+
+// delete
+func (repo *DynamoDBGameRepository) DeleteGame(id string) error {
+	if id == "" {
+		return fmt.Errorf("cannot delete game without a valid ID")
+	}
+
+	keyCondition := map[string]types.AttributeValue{
+		"Id": &types.AttributeValueMemberS{Value: id},
+	}
+
+	_, err := repo.Client.DeleteItem(context.Background(), &dynamodb.DeleteItemInput{
+		TableName: aws.String("Games"),
+		Key:       keyCondition,
+	})
+	if err != nil {
+		fmt.Printf("Couldn't delete item from table. Here's why: %v\n", err)
+		return fmt.Errorf("failed to delete game: %v", err)
+	}
+
+	return err
+}

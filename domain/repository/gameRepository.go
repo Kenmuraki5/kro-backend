@@ -7,5 +7,7 @@ import (
 
 type GameRepository interface {
 	GetAllGames() ([]*entity.Game, error)
-	AddGame(game restmodel.Game) (*restmodel.Game, error)
+	AddGame(restmodel.Game) (*restmodel.Game, error)
+	UpdateGame(entity.Game) (*entity.Game, error)
+	DeleteGame(string) error
 }
