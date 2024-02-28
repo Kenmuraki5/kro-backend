@@ -27,10 +27,8 @@ func main() {
 
 	router := gin.Default()
 
-	router.GET("/games", gameController.GetAllGamesHandler)
-	router.POST("/addGame", gameController.AddGameHandler)
-	router.PUT("/updateGame", gameController.UpdateGameHandler)
-	router.DELETE("/deleteGame/:id", gameController.DeleteGame)
+	gameController.SetupRoutes(router)
+
 	err = router.Run(":8080")
 	if err != nil {
 		fmt.Printf("Error starting server: %v\n", err)

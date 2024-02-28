@@ -20,6 +20,17 @@ func NewGameController(service interfaces.GameService) *GameController {
 	}
 }
 
+// set up router
+func (gc *GameController) SetupRoutes(router *gin.Engine) {
+	gameGroup := router.Group("/games")
+	{
+		gameGroup.GET("", gc.GetAllGamesHandler)
+		gameGroup.POST("/addGame", gc.AddGameHandler)
+		gameGroup.PUT("/updateGame", gc.UpdateGameHandler)
+		gameGroup.DELETE("/deleteGame/:id", gc.DeleteGame)
+	}
+}
+
 func (controller *GameController) GetAllGamesHandler(c *gin.Context) {
 	games, err := controller.service.GetAllGames()
 	fmt.Println(games)
