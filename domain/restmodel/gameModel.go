@@ -1,7 +1,6 @@
-package entity
+package restmodel
 
 type Game struct {
-	Id          string   `json:"Id"`
 	Description string   `json:"description"`
 	Name        string   `json:"name"`
 	Stock       int      `json:"stock"`

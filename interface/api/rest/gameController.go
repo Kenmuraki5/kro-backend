@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Kenmuraki5/kro-backend.git/application/interfaces"
+	"github.com/Kenmuraki5/kro-backend.git/domain/restmodel"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,4 +28,20 @@ func (controller *GameController) GetAllGamesHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, games)
+}
+
+func (controller *GameController) AddGameHandler(c *gin.Context) {
+	var newGame restmodel.Game
+	if err := c.ShouldBindJSON(&newGame); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	addedGame, err := controller.service.AddGame(newGame)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, addedGame)
 }

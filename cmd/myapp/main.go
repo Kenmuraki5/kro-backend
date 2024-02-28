@@ -28,6 +28,7 @@ func main() {
 	router := gin.Default()
 
 	router.GET("/games", gameController.GetAllGamesHandler)
+	router.POST("/addGame", gameController.AddGameHandler)
 
 	err = router.Run(":8080")
 	if err != nil {
