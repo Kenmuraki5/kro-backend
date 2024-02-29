@@ -25,9 +25,19 @@ func main() {
 
 	gameController := rest.NewGameController(gameService)
 
+	//add console controller	i guess
+	consoleRepo := dynamoDb.NewDynamoDBConsoleRepository(dbClient.Client)
+
+	consoleService := services.NewConsoleService(consoleRepo)
+
+	consoleController := rest.NewConsoleController(consoleService)
+
+
 	router := gin.Default()
 
 	gameController.SetupRoutes(router)
+	
+	consoleController.SetupRoutes(router)
 
 	err = router.Run(":8080")
 	if err != nil {
