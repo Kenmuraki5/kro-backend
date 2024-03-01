@@ -55,7 +55,7 @@ func (repo *DynamoDBOrderRepository) AddOrders(orders []restmodel.Order) ([]*res
 			OrderId:         orderID,
 			ProductId:       order.ProductId,
 			Quantity:        order.Quantity,
-			CustomerID:      order.CustomerID,
+			CustomerId:      order.CustomerId,
 			OrderDate:       order.OrderDate,
 			Status:          "Pending",
 			Subtotal:        order.Subtotal,
