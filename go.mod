@@ -28,7 +28,6 @@ require (
 )
 
 require (
-	github.com/aws/aws-sdk-go v1.50.29
 	github.com/aws/aws-sdk-go-v2/config v1.27.0
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.13.5
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.30.0
