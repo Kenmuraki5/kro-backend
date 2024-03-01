@@ -5,8 +5,10 @@ import (
 	"net/http"
 
 	"github.com/Kenmuraki5/kro-backend.git/application/interfaces"
+	"github.com/Kenmuraki5/kro-backend.git/application/services/auth"
 	"github.com/Kenmuraki5/kro-backend.git/domain/entity"
 	"github.com/Kenmuraki5/kro-backend.git/domain/restmodel"
+	"github.com/Kenmuraki5/kro-backend.git/interface/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,6 +24,7 @@ func NewGameController(service interfaces.GameService) *GameController {
 
 // set up router
 func (gc *GameController) SetupRoutes(router *gin.Engine) {
+	router.Use(middleware.AuthMiddleware(&auth.AuthService{}))
 	gameGroup := router.Group("/games")
 	{
 		gameGroup.GET("", gc.GetAllGamesHandler)

@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/Kenmuraki5/kro-backend.git/application/services"
+	"github.com/Kenmuraki5/kro-backend.git/application/services/auth"
 	"github.com/Kenmuraki5/kro-backend.git/infrastructure/persistence/dynamoDb"
 	"github.com/Kenmuraki5/kro-backend.git/interface/api/rest"
 	"github.com/gin-gonic/gin"
@@ -34,11 +35,16 @@ func main() {
 	orderService := services.NewOrderService(orderRepo, gameRepo, consoleRepo)
 	orderController := rest.NewOrderController(orderService)
 
+	//Customers
+	customerRepo := dynamoDb.NewDynamoDBCustomerRepository(dbClient.Client)
+	customerservice := services.NewCustomerService(customerRepo, auth.AuthService{})
+	customerController := rest.NewCustomerController(customerservice)
+
 	router := gin.Default()
 
 	gameController.SetupRoutes(router)
 	orderController.SetupRoutes(router)
-
+	customerController.SetupRoutes(router)
 	consoleController.SetupRoutes(router)
 
 	err = router.Run(":8080")
