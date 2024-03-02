@@ -30,7 +30,7 @@ func (s *CustomerService) AddUser(user restmodel.Customer) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	token, err := s.authService.GenerateToken(id)
+	token, err := s.authService.GenerateToken(user.Email)
 	if err != nil {
 		return "", err
 	}
@@ -61,8 +61,8 @@ func (s *CustomerService) UpdateUser(user entity.Customer) (string, error) {
 	return addtokenToDb, nil
 }
 
-func (s *CustomerService) GetUserById(id string) (*dynamodb.GetItemOutput, error) {
-	data, err := s.customerRepository.GetUserById(id)
+func (s *CustomerService) GetUserByEmail(email string) (*dynamodb.GetItemOutput, error) {
+	data, err := s.customerRepository.GetUserByEmail(email)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update customer data: %w", err)
 	}

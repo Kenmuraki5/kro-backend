@@ -8,6 +8,8 @@ import (
 	"github.com/Kenmuraki5/kro-backend.git/domain/entity"
 	"github.com/Kenmuraki5/kro-backend.git/domain/repository"
 	"github.com/Kenmuraki5/kro-backend.git/domain/restmodel"
+	omise "github.com/Kenmuraki5/kro-backend.git/pkg/payment"
+	"github.com/google/uuid"
 )
 
 type OrderService struct {
@@ -32,7 +34,7 @@ func (s *OrderService) GetAllOrders() ([]*entity.Order, error) {
 	return s.orderRepository.GetAllOrders()
 }
 
-func (s *OrderService) AddOrders(order []restmodel.Order) ([]*restmodel.Order, error) {
+func (s *OrderService) AddOrders(order []restmodel.Order, payment restmodel.Payment) ([]*restmodel.Order, error) {
 	gameOrders := make([]restmodel.Order, 0)
 	consoleOrders := make([]restmodel.Order, 0)
 
@@ -47,20 +49,29 @@ func (s *OrderService) AddOrders(order []restmodel.Order) ([]*restmodel.Order, e
 		}
 	}
 
-	if len(gameOrders) > 0 {
-		err := s.gameRepository.UpdateStockGame(gameOrders)
-		if err != nil {
-			return nil, err
-		}
+	err := s.orderRepository.UpdateStock(gameOrders, consoleOrders)
+	if err != nil {
+		return nil, fmt.Errorf("error: %v", err)
 	}
 
-	if len(consoleOrders) > 0 {
-		err := s.consoleRepository.UpdateStockConsole(consoleOrders)
-		if err != nil {
-			return nil, err
-		}
+	client, err := omise.GetOmiseClient()
+	if err != nil {
+		return nil, fmt.Errorf("error creating Omise client: %v", err)
 	}
-	addedOrder, err := s.orderRepository.AddOrders(order)
+	token, err := omise.CreateToken(client, payment)
+	if err != nil {
+		return nil, fmt.Errorf("error creating token: %v", err)
+	}
+	orderId := uuid.NewString()
+	err = omise.CreateChargeByToken(client, token, orderId, payment.Total)
+	if err != nil {
+		return nil, fmt.Errorf("error creating charge by token: %v", err)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("error creating Omise client: %v", err)
+	}
+
+	addedOrder, err := s.orderRepository.AddOrders(order, orderId)
 	if err != nil {
 		return nil, err
 	}

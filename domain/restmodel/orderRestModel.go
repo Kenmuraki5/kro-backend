@@ -5,11 +5,12 @@ import (
 )
 
 type Order struct {
-	ProductId       string
-	Quantity        int
-	CustomerId      string
-	OrderDate       time.Time
-	Subtotal        float64
-	ShippingAddress string
-	Type            string
+	ProductId       string    `json:"ProductId"`
+	Quantity        int       `json:"Quantity"`
+	CustomerId      string    `json:"CustomerId"`
+	OrderDate       time.Time `json:"OrderDate"`
+	Subtotal        float64   `json:"Subtotal"`
+	ShippingAddress string    `json:"ShippingAddress"`
+	ShippingMethod  string    `json:"ShippingMethod"`
+	Type            string    `json:"Type"`
 }

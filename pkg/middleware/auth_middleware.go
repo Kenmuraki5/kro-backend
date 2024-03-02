@@ -16,14 +16,14 @@ func AuthMiddleware(authService *auth.AuthService) gin.HandlerFunc {
 			return
 		}
 
-		userId, _, err := authService.ValidateToken(tokenString)
+		email, _, err := authService.ValidateToken(tokenString)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			return
 		}
 
 		// Add the user ID to the context
-		c.Set("userId", userId)
+		c.Set("email", email)
 
 		c.Next()
 	}

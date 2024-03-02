@@ -6,7 +6,6 @@ import (
 
 	"github.com/Kenmuraki5/kro-backend.git/domain/entity"
 	"github.com/Kenmuraki5/kro-backend.git/domain/restmodel"
-	"github.com/google/uuid"
 
 	// "github.com/Kenmuraki5/kro-backend.git/domain/repository"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -45,14 +44,13 @@ func (repo *DynamoDBOrderRepository) GetAllOrders() ([]*entity.Order, error) {
 	return Orders, nil
 }
 
-func (repo *DynamoDBOrderRepository) AddOrders(orders []restmodel.Order) ([]*restmodel.Order, error) {
+func (repo *DynamoDBOrderRepository) AddOrders(orders []restmodel.Order, orderId string) ([]*restmodel.Order, error) {
 	var addedOrders []*restmodel.Order
 	var writeRequests []types.WriteRequest
-	orderID := uuid.NewString()
 	for _, order := range orders {
 
 		entityOrder := entity.Order{
-			OrderId:         orderID,
+			OrderId:         orderId,
 			ProductId:       order.ProductId,
 			Quantity:        order.Quantity,
 			CustomerId:      order.CustomerId,
@@ -60,6 +58,7 @@ func (repo *DynamoDBOrderRepository) AddOrders(orders []restmodel.Order) ([]*res
 			Status:          "Pending",
 			Subtotal:        order.Subtotal,
 			ShippingAddress: order.ShippingAddress,
+			ShippingMethod:  order.ShippingMethod,
 			Type:            order.Type,
 		}
 
@@ -134,4 +133,66 @@ func (repo *DynamoDBOrderRepository) DeleteOrder(orderId, productId string) erro
 	}
 
 	return err
+}
+
+func (repo *DynamoDBOrderRepository) UpdateStock(gameOrders []restmodel.Order, consoleOrders []restmodel.Order) error {
+	transaction := make([]types.TransactWriteItem, 0, len(gameOrders)+len(consoleOrders))
+
+	for _, item := range gameOrders {
+		key, err := attributevalue.MarshalMap(map[string]string{
+			"Id": item.ProductId,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to marshal key: %v", err)
+		}
+
+		updateTable1 := &types.Update{
+			TableName:        aws.String("Games"), // Adjust the table name as needed
+			Key:              key,
+			UpdateExpression: aws.String("SET Stock = if_not_exists(Stock, :initial) - :quantity"),
+			ExpressionAttributeValues: map[string]types.AttributeValue{
+				":quantity": &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", item.Quantity)},
+				":initial":  &types.AttributeValueMemberN{Value: "0"},
+			},
+			ConditionExpression: aws.String("attribute_exists(Stock) and Stock >= :quantity"),
+		}
+
+		transaction = append(transaction, types.TransactWriteItem{Update: updateTable1})
+	}
+
+	for _, item := range consoleOrders {
+		key, err := attributevalue.MarshalMap(map[string]string{
+			"Id": item.ProductId,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to marshal key: %v", err)
+		}
+
+		updateTable2 := &types.Update{
+			TableName:        aws.String("Consoles"),
+			Key:              key,
+			UpdateExpression: aws.String("SET Stock = if_not_exists(Stock, :initial) - :quantity"),
+			ExpressionAttributeValues: map[string]types.AttributeValue{
+				":quantity": &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", item.Quantity)},
+				":initial":  &types.AttributeValueMemberN{Value: "0"},
+			},
+			ConditionExpression: aws.String("attribute_exists(Stock) and Stock >= :quantity"),
+		}
+
+		transaction = append(transaction, types.TransactWriteItem{Update: updateTable2})
+	}
+
+	if len(transaction) == 0 {
+		return nil
+	}
+
+	_, err := repo.Client.TransactWriteItems(context.TODO(), &dynamodb.TransactWriteItemsInput{
+		TransactItems: transaction,
+	})
+	if err != nil {
+		fmt.Printf("Failed to execute transaction: %v", err)
+		return fmt.Errorf("transaction failed: %v", err)
+	}
+
+	return nil
 }

@@ -12,7 +12,7 @@ import (
 var secretKey []byte
 
 func init() {
-	err := godotenv.Load("env/.env")
+	err := godotenv.Load()
 	if err != nil {
 		fmt.Println("Error loading .env file")
 	}
@@ -22,9 +22,9 @@ func init() {
 
 type AuthService struct{}
 
-func (s *AuthService) GenerateToken(userId string) (string, error) {
+func (s *AuthService) GenerateToken(email string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": userId,
+		"sub": email,
 		"iss": "your-issuer",
 	})
 
@@ -50,12 +50,12 @@ func (s *AuthService) ValidateToken(tokenString string) (string, *jwt.Token, err
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		userId, ok := claims["sub"].(string)
+		email, ok := claims["sub"].(string)
 		if !ok {
 			return "", nil, errors.New("user ID not found in token claims")
 		}
 
-		return userId, token, nil
+		return email, token, nil
 	}
 
 	return "", nil, errors.New("invalid token claims")

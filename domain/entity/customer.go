@@ -5,9 +5,8 @@ import (
 )
 
 type Customer struct {
-	Id          string              `json:"Id"`
-	FullName    string              `json:"fullName"`
 	Email       string              `json:"email"`
+	FullName    string              `json:"fullName"`
 	PhoneNumber string              `json:"phoneNumber"`
 	Address     valueobject.Address `json:"address"`
 }

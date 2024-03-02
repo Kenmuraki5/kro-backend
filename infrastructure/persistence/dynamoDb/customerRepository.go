@@ -11,7 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/google/uuid"
 )
 
 type DynamoDBCustomerRepository struct {
@@ -23,26 +22,25 @@ func NewDynamoDBCustomerRepository(client *dynamodb.Client) *DynamoDBCustomerRep
 }
 
 func (repo *DynamoDBCustomerRepository) CreateUser(customer restmodel.Customer) (string, error) {
-	var id = uuid.NewString()
 	item, err := attributevalue.MarshalMap(customer)
 	if err != nil {
 		return "", err
 	}
 
-	item["Id"] = &types.AttributeValueMemberS{Value: id}
+	input := &dynamodb.PutItemInput{
+		TableName:           aws.String("Customers"),
+		Item:                item,
+		ConditionExpression: aws.String("attribute_not_exists(Email)"),
+	}
 
-	fmt.Print(item)
-
-	_, err = repo.Client.PutItem(context.Background(), &dynamodb.PutItemInput{
-		TableName: aws.String("Customers"),
-		Item:      item,
-	})
+	// Execute the PutItem operation
+	_, err = repo.Client.PutItem(context.Background(), input)
 	if err != nil {
 		fmt.Printf("Couldn't Create User to table. Here's why: %v\n", err)
 		return "", err
 	}
 
-	return id, nil
+	return customer.Email, nil
 }
 
 func (repo *DynamoDBCustomerRepository) UpdateUser(customer entity.Customer) (string, error) {
@@ -62,14 +60,14 @@ func (repo *DynamoDBCustomerRepository) UpdateUser(customer entity.Customer) (st
 		return "", err
 	}
 
-	return customer.Id, nil
+	return customer.Email, nil
 }
 
-func (repo *DynamoDBCustomerRepository) GetUserById(userId string) (*dynamodb.GetItemOutput, error) {
+func (repo *DynamoDBCustomerRepository) GetUserByEmail(email string) (*dynamodb.GetItemOutput, error) {
 	input := &dynamodb.GetItemInput{
 		TableName: aws.String("Customers"),
 		Key: map[string]types.AttributeValue{
-			"Id": &types.AttributeValueMemberS{Value: userId},
+			"Email": &types.AttributeValueMemberS{Value: email},
 		},
 	}
 
@@ -86,10 +84,10 @@ func (repo *DynamoDBCustomerRepository) GetUserById(userId string) (*dynamodb.Ge
 	return result, nil
 }
 
-func (repo *DynamoDBCustomerRepository) AddToken(userId, token string) (string, error) {
-	fmt.Print(userId)
+func (repo *DynamoDBCustomerRepository) AddToken(email, token string) (string, error) {
+	fmt.Print(email)
 	item := map[string]types.AttributeValue{
-		"CustomerId": &types.AttributeValueMemberS{Value: userId},
+		"CustomerId": &types.AttributeValueMemberS{Value: email},
 		"Token":      &types.AttributeValueMemberS{Value: token},
 	}
 

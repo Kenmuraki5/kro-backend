@@ -13,5 +13,6 @@ type Order struct {
 	Status          string    `json:"status"`
 	Subtotal        float64   `json:"subtotal"`
 	ShippingAddress string    `json:"shippingAddress"`
+	ShippingMethod  string    `json:"shippingMethod"`
 	Type            string    `json:"type"`
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/Kenmuraki5/kro-backend.git/application/services/auth"
 	"github.com/Kenmuraki5/kro-backend.git/domain/entity"
 	"github.com/Kenmuraki5/kro-backend.git/domain/restmodel"
-	"github.com/Kenmuraki5/kro-backend.git/interface/middleware"
+	"github.com/Kenmuraki5/kro-backend.git/pkg/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -44,15 +44,18 @@ func (controller *OrderController) GetAllOrdersHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, Orders)
 }
-
 func (controller *OrderController) AddOrderHandler(c *gin.Context) {
-	var newOrder []restmodel.Order
-	if err := c.ShouldBindJSON(&newOrder); err != nil {
+	var orderData struct {
+		NewOrder []restmodel.Order `json:"newOrder"`
+		Payment  restmodel.Payment `json:"payment"`
+	}
+
+	if err := c.ShouldBindJSON(&orderData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	addedOrder, err := controller.service.AddOrders(newOrder)
+	addedOrder, err := controller.service.AddOrders(orderData.NewOrder, orderData.Payment)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

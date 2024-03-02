@@ -14,7 +14,6 @@ import (
 
 func main() {
 	dbClient, err := dynamoDb.NewDynamoDBClient()
-
 	if err != nil {
 		fmt.Printf("Error initializing DynamoDB client: %v\n", err)
 		return

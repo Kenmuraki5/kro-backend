@@ -7,7 +7,7 @@ import (
 	"github.com/Kenmuraki5/kro-backend.git/application/services/auth"
 	"github.com/Kenmuraki5/kro-backend.git/domain/entity"
 	"github.com/Kenmuraki5/kro-backend.git/domain/restmodel"
-	"github.com/Kenmuraki5/kro-backend.git/interface/middleware"
+	"github.com/Kenmuraki5/kro-backend.git/pkg/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,21 +25,21 @@ func NewCustomerController(service interfaces.CustomerService) *CustomerControll
 func (gc *CustomerController) SetupRoutes(router *gin.Engine) {
 	customerGroup := router.Group("/Customers")
 	{
-		customerGroup.GET("", middleware.AuthMiddleware(&auth.AuthService{}), gc.GetUserByIdHandler)
+		customerGroup.GET("", middleware.AuthMiddleware(&auth.AuthService{}), gc.GetUserByEmailHandler)
 
 		customerGroup.POST("/addCustomer", gc.CreateUserHandler)
 		customerGroup.PUT("/updateCustomer", gc.UpdateUserHandler)
 	}
 }
 
-func (controller *CustomerController) GetUserByIdHandler(c *gin.Context) {
-	id, exists := c.Get("userId")
+func (controller *CustomerController) GetUserByEmailHandler(c *gin.Context) {
+	email, exists := c.Get("email")
 	if !exists {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "User ID not found in context"})
 		return
 	}
 
-	user, err := controller.service.GetUserById(id.(string))
+	user, err := controller.service.GetUserByEmail(email.(string))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch Customer"})
 		return
