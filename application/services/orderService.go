@@ -34,7 +34,20 @@ func (s *OrderService) GetAllOrders() ([]*entity.Order, error) {
 	return s.orderRepository.GetAllOrders()
 }
 
-func (s *OrderService) AddOrders(order []restmodel.Order, payment restmodel.Payment) ([]*restmodel.Order, error) {
+func (s *OrderService) CreatePaymentToken(payment restmodel.Payment) (string, error) {
+	client, err := omise.GetOmiseClient()
+	if err != nil {
+		return "", fmt.Errorf("error creating Omise client: %v", err)
+	}
+	token, err := omise.CreateToken(client, payment)
+	if err != nil {
+		return "", fmt.Errorf("error creating token: %v", err)
+	}
+
+	return token, nil
+}
+
+func (s *OrderService) AddOrders(order []restmodel.Order, token string, amount int64) ([]*restmodel.Order, error) {
 	gameOrders := make([]restmodel.Order, 0)
 	consoleOrders := make([]restmodel.Order, 0)
 
@@ -54,16 +67,13 @@ func (s *OrderService) AddOrders(order []restmodel.Order, payment restmodel.Paym
 		return nil, fmt.Errorf("error: %v", err)
 	}
 
+	orderId := uuid.NewString()
+
 	client, err := omise.GetOmiseClient()
 	if err != nil {
 		return nil, fmt.Errorf("error creating Omise client: %v", err)
 	}
-	token, err := omise.CreateToken(client, payment)
-	if err != nil {
-		return nil, fmt.Errorf("error creating token: %v", err)
-	}
-	orderId := uuid.NewString()
-	err = omise.CreateChargeByToken(client, token, orderId, payment.Total)
+	err = omise.CreateChargeByToken(client, token, orderId, amount)
 	if err != nil {
 		return nil, fmt.Errorf("error creating charge by token: %v", err)
 	}
