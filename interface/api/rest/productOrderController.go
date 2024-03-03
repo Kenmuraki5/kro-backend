@@ -28,9 +28,10 @@ func (gc *OrderController) SetupRoutes(router *gin.Engine) {
 	{
 		OrderGroup.Use(middleware.AuthMiddleware(&auth.AuthService{}))
 		OrderGroup.GET("", gc.GetAllOrdersHandler)
+		OrderGroup.POST("/createPaymentToken", gc.CreatePaymentTokenHandler)
 		OrderGroup.POST("/addOrders", gc.AddOrderHandler)
 		OrderGroup.PUT("/updateOrder", gc.UpdateOrderHandler)
-		OrderGroup.DELETE("/deleteOrder/:orderId/:productId", gc.DeleteOrder)
+		OrderGroup.DELETE("/deleteOrder/:orderId/:productId", gc.DeleteOrderHandler)
 	}
 }
 
@@ -47,7 +48,8 @@ func (controller *OrderController) GetAllOrdersHandler(c *gin.Context) {
 func (controller *OrderController) AddOrderHandler(c *gin.Context) {
 	var orderData struct {
 		NewOrder []restmodel.Order `json:"newOrder"`
-		Payment  restmodel.Payment `json:"payment"`
+		Token    string            `json:"token"`
+		Amount   int64             `json:"amount"`
 	}
 
 	if err := c.ShouldBindJSON(&orderData); err != nil {
@@ -55,7 +57,7 @@ func (controller *OrderController) AddOrderHandler(c *gin.Context) {
 		return
 	}
 
-	addedOrder, err := controller.service.AddOrders(orderData.NewOrder, orderData.Payment)
+	addedOrder, err := controller.service.AddOrders(orderData.NewOrder, orderData.Token, orderData.Amount)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -80,7 +82,7 @@ func (controller *OrderController) UpdateOrderHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, Orders)
 }
 
-func (controller *OrderController) DeleteOrder(c *gin.Context) {
+func (controller *OrderController) DeleteOrderHandler(c *gin.Context) {
 	orderId := c.Param("orderId")
 	productId := c.Param("productId")
 	err := controller.service.DeleteOrder(orderId, productId)
@@ -90,4 +92,20 @@ func (controller *OrderController) DeleteOrder(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"message": "Order item delete successfully"})
+}
+
+func (controller *OrderController) CreatePaymentTokenHandler(c *gin.Context) {
+	var payment restmodel.Payment
+	if err := c.ShouldBindJSON(&payment); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	token, err := controller.service.CreatePaymentToken(payment)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, token)
 }
