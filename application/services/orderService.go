@@ -8,7 +8,7 @@ import (
 	"github.com/Kenmuraki5/kro-backend.git/domain/entity"
 	"github.com/Kenmuraki5/kro-backend.git/domain/repository"
 	"github.com/Kenmuraki5/kro-backend.git/domain/restmodel"
-	omise "github.com/Kenmuraki5/kro-backend.git/pkg/payment"
+	omise "github.com/Kenmuraki5/kro-backend.git/pkg/omise"
 	"github.com/google/uuid"
 )
 
