@@ -47,22 +47,9 @@ func (s *OrderService) CreatePaymentToken(payment restmodel.Payment) (string, er
 	return token, nil
 }
 
-func (s *OrderService) AddOrders(order []restmodel.Order, token string, amount int64) ([]*restmodel.Order, error) {
-	gameOrders := make([]restmodel.Order, 0)
-	consoleOrders := make([]restmodel.Order, 0)
+func (s *OrderService) AddOrders(orders []restmodel.Order, token string, amount int64) ([]*restmodel.Order, error) {
+	err := s.orderRepository.UpdateStock(orders)
 
-	for _, item := range order {
-		switch item.Type {
-		case "Game":
-			gameOrders = append(gameOrders, item)
-		case "Console":
-			consoleOrders = append(consoleOrders, item)
-		default:
-			fmt.Printf("Unsupported order type: %s\n", item.Type)
-		}
-	}
-
-	err := s.orderRepository.UpdateStock(gameOrders, consoleOrders)
 	if err != nil {
 		return nil, fmt.Errorf("error: %v", err)
 	}
@@ -77,11 +64,8 @@ func (s *OrderService) AddOrders(order []restmodel.Order, token string, amount i
 	if err != nil {
 		return nil, fmt.Errorf("error creating charge by token: %v", err)
 	}
-	if err != nil {
-		return nil, fmt.Errorf("error creating Omise client: %v", err)
-	}
 
-	addedOrder, err := s.orderRepository.AddOrders(order, orderId)
+	addedOrder, err := s.orderRepository.AddOrders(orders, orderId)
 	if err != nil {
 		return nil, err
 	}

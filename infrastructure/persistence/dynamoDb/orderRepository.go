@@ -135,10 +135,10 @@ func (repo *DynamoDBOrderRepository) DeleteOrder(orderId, productId string) erro
 	return err
 }
 
-func (repo *DynamoDBOrderRepository) UpdateStock(gameOrders []restmodel.Order, consoleOrders []restmodel.Order) error {
-	transaction := make([]types.TransactWriteItem, 0, len(gameOrders)+len(consoleOrders))
+func (repo *DynamoDBOrderRepository) UpdateStock(orders []restmodel.Order) error {
+	transaction := make([]types.TransactWriteItem, 0, len(orders))
 
-	for _, item := range gameOrders {
+	for _, item := range orders {
 		key, err := attributevalue.MarshalMap(map[string]string{
 			"Id": item.ProductId,
 		})
@@ -146,8 +146,8 @@ func (repo *DynamoDBOrderRepository) UpdateStock(gameOrders []restmodel.Order, c
 			return fmt.Errorf("failed to marshal key: %v", err)
 		}
 
-		updateTable1 := &types.Update{
-			TableName:        aws.String("Games"), // Adjust the table name as needed
+		updateTable := &types.Update{
+			TableName:        aws.String(item.Type + "s"),
 			Key:              key,
 			UpdateExpression: aws.String("SET Stock = if_not_exists(Stock, :initial) - :quantity"),
 			ExpressionAttributeValues: map[string]types.AttributeValue{
@@ -157,29 +157,7 @@ func (repo *DynamoDBOrderRepository) UpdateStock(gameOrders []restmodel.Order, c
 			ConditionExpression: aws.String("attribute_exists(Stock) and Stock >= :quantity"),
 		}
 
-		transaction = append(transaction, types.TransactWriteItem{Update: updateTable1})
-	}
-
-	for _, item := range consoleOrders {
-		key, err := attributevalue.MarshalMap(map[string]string{
-			"Id": item.ProductId,
-		})
-		if err != nil {
-			return fmt.Errorf("failed to marshal key: %v", err)
-		}
-
-		updateTable2 := &types.Update{
-			TableName:        aws.String("Consoles"),
-			Key:              key,
-			UpdateExpression: aws.String("SET Stock = if_not_exists(Stock, :initial) - :quantity"),
-			ExpressionAttributeValues: map[string]types.AttributeValue{
-				":quantity": &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", item.Quantity)},
-				":initial":  &types.AttributeValueMemberN{Value: "0"},
-			},
-			ConditionExpression: aws.String("attribute_exists(Stock) and Stock >= :quantity"),
-		}
-
-		transaction = append(transaction, types.TransactWriteItem{Update: updateTable2})
+		transaction = append(transaction, types.TransactWriteItem{Update: updateTable})
 	}
 
 	if len(transaction) == 0 {

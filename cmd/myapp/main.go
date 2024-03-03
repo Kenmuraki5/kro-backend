@@ -9,6 +9,7 @@ import (
 	"github.com/Kenmuraki5/kro-backend.git/application/services/auth"
 	"github.com/Kenmuraki5/kro-backend.git/infrastructure/persistence/dynamoDb"
 	"github.com/Kenmuraki5/kro-backend.git/interface/api/rest"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -39,6 +40,8 @@ func main() {
 	orderController := rest.NewOrderController(orderService)
 
 	router := gin.Default()
+
+	router.Use(cors.Default())
 
 	gameController.SetupRoutes(router)
 	orderController.SetupRoutes(router)
