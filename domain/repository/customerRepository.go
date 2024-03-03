@@ -7,8 +7,8 @@ import (
 )
 
 type CustomerRepository interface {
-	CreateUser(restmodel.Customer) (string, error)
-	UpdateUser(entity.Customer) (string, error)
+	CreateUser(entity.Customer) (string, error)
+	UpdateUser(restmodel.Customer, string) (string, error)
 	GetUserByEmail(string) (*dynamodb.GetItemOutput, error)
-	AddToken(string, string) (string, error)
+	AuthenticateUser(string, string) (bool, error)
 }

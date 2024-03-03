@@ -24,9 +24,9 @@ func NewConsoleController(service interfaces.ConsoleService) *ConsoleController 
 
 // set up router
 func (gc *ConsoleController) SetupRoutes(router *gin.Engine) {
-	router.Use(middleware.AuthMiddleware(&auth.AuthService{}))
 	consoleGroup := router.Group("/consoles")
 	{
+		consoleGroup.Use(middleware.AuthMiddleware(&auth.AuthService{}))
 		consoleGroup.GET("", gc.GetAllConsolesHandler)
 		consoleGroup.POST("/addConsole", gc.AddConsoleHandler)
 		consoleGroup.PUT("/updateConsole", gc.UpdateConsoleHandler)

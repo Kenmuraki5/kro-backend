@@ -18,6 +18,10 @@ func main() {
 		fmt.Printf("Error initializing DynamoDB client: %v\n", err)
 		return
 	}
+	//Customers
+	customerRepo := dynamoDb.NewDynamoDBCustomerRepository(dbClient.Client)
+	customerservice := services.NewCustomerService(customerRepo, auth.AuthService{})
+	customerController := rest.NewCustomerController(customerservice)
 
 	//Games
 	gameRepo := dynamoDb.NewDynamoDBGameRepository(dbClient.Client)
@@ -33,11 +37,6 @@ func main() {
 	orderRepo := dynamoDb.NewDynamoDBOrderRepository(dbClient.Client)
 	orderService := services.NewOrderService(orderRepo, gameRepo, consoleRepo)
 	orderController := rest.NewOrderController(orderService)
-
-	//Customers
-	customerRepo := dynamoDb.NewDynamoDBCustomerRepository(dbClient.Client)
-	customerservice := services.NewCustomerService(customerRepo, auth.AuthService{})
-	customerController := rest.NewCustomerController(customerservice)
 
 	router := gin.Default()
 

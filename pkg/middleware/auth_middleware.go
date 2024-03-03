@@ -22,7 +22,7 @@ func AuthMiddleware(authService *auth.AuthService) gin.HandlerFunc {
 			return
 		}
 
-		// Add the user ID to the context
+		// Add the email to the context
 		c.Set("email", email)
 
 		c.Next()

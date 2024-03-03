@@ -25,8 +25,9 @@ func NewCustomerService(
 	}
 }
 
-func (s *CustomerService) AddUser(user restmodel.Customer) (string, error) {
+func (s *CustomerService) AddUser(user entity.Customer) (string, error) {
 	id, err := s.customerRepository.CreateUser(user)
+	fmt.Println(id)
 	if err != nil {
 		return "", err
 	}
@@ -34,17 +35,11 @@ func (s *CustomerService) AddUser(user restmodel.Customer) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	addtokenToDb, err := s.customerRepository.AddToken(id, token)
-	if err != nil {
-		return "", err
-	}
-
-	return addtokenToDb, nil
+	return token, nil
 }
 
-func (s *CustomerService) UpdateUser(user entity.Customer) (string, error) {
-	id, err := s.customerRepository.UpdateUser(user)
+func (s *CustomerService) UpdateUser(user restmodel.Customer, email string) (string, error) {
+	id, err := s.customerRepository.UpdateUser(user, email)
 	if err != nil {
 		return "", err
 	}
@@ -53,12 +48,7 @@ func (s *CustomerService) UpdateUser(user entity.Customer) (string, error) {
 		return "", err
 	}
 
-	addtokenToDb, err := s.customerRepository.AddToken(id, token)
-	if err != nil {
-		return "", err
-	}
-
-	return addtokenToDb, nil
+	return token, nil
 }
 
 func (s *CustomerService) GetUserByEmail(email string) (*dynamodb.GetItemOutput, error) {
@@ -68,4 +58,16 @@ func (s *CustomerService) GetUserByEmail(email string) (*dynamodb.GetItemOutput,
 	}
 
 	return data, err
+}
+
+func (s *CustomerService) AuthenticateUser(email, password string) (string, error) {
+	_, err := s.customerRepository.AuthenticateUser(email, password)
+	if err != nil {
+		return "", fmt.Errorf(err.Error())
+	}
+	token, err := s.authService.GenerateToken(email)
+	if err != nil {
+		return "", fmt.Errorf(err.Error())
+	}
+	return token, nil
 }

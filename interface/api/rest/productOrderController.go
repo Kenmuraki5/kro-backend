@@ -24,9 +24,9 @@ func NewOrderController(service interfaces.OrderService) *OrderController {
 
 // set up router
 func (gc *OrderController) SetupRoutes(router *gin.Engine) {
-	router.Use(middleware.AuthMiddleware(&auth.AuthService{}))
 	OrderGroup := router.Group("/orders")
 	{
+		OrderGroup.Use(middleware.AuthMiddleware(&auth.AuthService{}))
 		OrderGroup.GET("", gc.GetAllOrdersHandler)
 		OrderGroup.POST("/addOrders", gc.AddOrderHandler)
 		OrderGroup.PUT("/updateOrder", gc.UpdateOrderHandler)

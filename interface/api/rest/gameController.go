@@ -24,9 +24,9 @@ func NewGameController(service interfaces.GameService) *GameController {
 
 // set up router
 func (gc *GameController) SetupRoutes(router *gin.Engine) {
-	router.Use(middleware.AuthMiddleware(&auth.AuthService{}))
 	gameGroup := router.Group("/games")
 	{
+		gameGroup.Use(middleware.AuthMiddleware(&auth.AuthService{}))
 		gameGroup.GET("", gc.GetAllGamesHandler)
 		gameGroup.POST("/addGame", gc.AddGameHandler)
 		gameGroup.PUT("/updateGame", gc.UpdateGameHandler)

@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type DynamoDBCustomerRepository struct {
@@ -21,19 +22,30 @@ func NewDynamoDBCustomerRepository(client *dynamodb.Client) *DynamoDBCustomerRep
 	return &DynamoDBCustomerRepository{Client: client}
 }
 
-func (repo *DynamoDBCustomerRepository) CreateUser(customer restmodel.Customer) (string, error) {
+func hashPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashedPassword), nil
+}
+
+func (repo *DynamoDBCustomerRepository) CreateUser(customer entity.Customer) (string, error) {
+	hashedPassword, err := hashPassword(customer.Password)
+	if err != nil {
+		return "", err
+	}
+	customer.Password = hashedPassword
 	item, err := attributevalue.MarshalMap(customer)
 	if err != nil {
 		return "", err
 	}
-
 	input := &dynamodb.PutItemInput{
 		TableName:           aws.String("Customers"),
 		Item:                item,
 		ConditionExpression: aws.String("attribute_not_exists(Email)"),
 	}
 
-	// Execute the PutItem operation
 	_, err = repo.Client.PutItem(context.Background(), input)
 	if err != nil {
 		fmt.Printf("Couldn't Create User to table. Here's why: %v\n", err)
@@ -43,24 +55,34 @@ func (repo *DynamoDBCustomerRepository) CreateUser(customer restmodel.Customer) 
 	return customer.Email, nil
 }
 
-func (repo *DynamoDBCustomerRepository) UpdateUser(customer entity.Customer) (string, error) {
+func (repo *DynamoDBCustomerRepository) UpdateUser(customer restmodel.Customer, email string) (string, error) {
 	item, err := attributevalue.MarshalMap(customer)
 	if err != nil {
 		return "", err
 	}
 
-	fmt.Print(item)
+	key := map[string]types.AttributeValue{
+		"Email": &types.AttributeValueMemberS{Value: email},
+	}
 
-	_, err = repo.Client.PutItem(context.Background(), &dynamodb.PutItemInput{
-		TableName: aws.String("Customers"),
-		Item:      item,
-	})
+	input := &dynamodb.UpdateItemInput{
+		TableName:        aws.String("Customers"),
+		Key:              key,
+		UpdateExpression: aws.String("SET FullName = :fullname, PhoneNumber = :phoneNumber, Address = :address"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":fullname":    item["FullName"],
+			":phoneNumber": item["PhoneNumber"],
+			":address":     item["Address"],
+		},
+	}
+
+	_, err = repo.Client.UpdateItem(context.Background(), input)
 	if err != nil {
-		fmt.Printf("Couldn't Create User to table. Here's why: %v\n", err)
+		fmt.Printf("Couldn't Update User in table. Here's why: %v\n", err)
 		return "", err
 	}
 
-	return customer.Email, nil
+	return email, nil
 }
 
 func (repo *DynamoDBCustomerRepository) GetUserByEmail(email string) (*dynamodb.GetItemOutput, error) {
@@ -84,21 +106,28 @@ func (repo *DynamoDBCustomerRepository) GetUserByEmail(email string) (*dynamodb.
 	return result, nil
 }
 
-func (repo *DynamoDBCustomerRepository) AddToken(email, token string) (string, error) {
-	fmt.Print(email)
-	item := map[string]types.AttributeValue{
-		"CustomerId": &types.AttributeValueMemberS{Value: email},
-		"Token":      &types.AttributeValueMemberS{Value: token},
-	}
-
-	_, err := repo.Client.PutItem(context.Background(), &dynamodb.PutItemInput{
-		TableName: aws.String("Tokens_c"),
-		Item:      item,
-	})
+func (repo *DynamoDBCustomerRepository) AuthenticateUser(email, password string) (bool, error) {
+	result, err := repo.GetUserByEmail(email)
 	if err != nil {
-		fmt.Printf("Couldn't add token to table. Here's why: %v\n", err)
-		return "", err
+		return false, err
 	}
 
-	return token, nil
+	if result == nil {
+		return false, errors.New("user not found")
+	}
+
+	hashedPasswordAttribute, ok := result.Item["Password"]
+	if !ok {
+		return false, errors.New("password not found in user record")
+	}
+	hashedPassword, ok := hashedPasswordAttribute.(*types.AttributeValueMemberS)
+	if !ok {
+		return false, errors.New("invalid password format in user record")
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword.Value), []byte(password))
+	if err != nil {
+		return false, nil
+	}
+	return true, nil
 }

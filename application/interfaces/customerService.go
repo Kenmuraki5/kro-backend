@@ -8,6 +8,7 @@ import (
 
 type CustomerService interface {
 	GetUserByEmail(string) (*dynamodb.GetItemOutput, error)
-	AddUser(restmodel.Customer) (string, error)
-	UpdateUser(entity.Customer) (string, error)
+	AddUser(entity.Customer) (string, error)
+	UpdateUser(restmodel.Customer, string) (string, error)
+	AuthenticateUser(string, string) (string, error)
 }
