@@ -5,8 +5,10 @@ import (
 	"net/http"
 
 	"github.com/Kenmuraki5/kro-backend.git/application/interfaces"
+	"github.com/Kenmuraki5/kro-backend.git/application/services/auth"
 	"github.com/Kenmuraki5/kro-backend.git/domain/entity"
 	"github.com/Kenmuraki5/kro-backend.git/domain/restmodel"
+	"github.com/Kenmuraki5/kro-backend.git/pkg/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,6 +26,7 @@ func NewConsoleController(service interfaces.ConsoleService) *ConsoleController 
 func (gc *ConsoleController) SetupRoutes(router *gin.Engine) {
 	consoleGroup := router.Group("/consoles")
 	{
+		consoleGroup.Use(middleware.AuthMiddleware(&auth.AuthService{}))
 		consoleGroup.GET("", gc.GetAllConsolesHandler)
 		consoleGroup.POST("/addConsole", gc.AddConsoleHandler)
 		consoleGroup.PUT("/updateConsole", gc.UpdateConsoleHandler)
