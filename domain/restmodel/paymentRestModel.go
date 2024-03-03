@@ -7,5 +7,5 @@ type Payment struct {
 	Number          string     `json:"number"`
 	ExpirationMonth time.Month `json:"expirationMonth"`
 	ExpirationYear  int        `json:"expirationYear"`
-	Total           int64      `json:"total"`
+	Cvc             string     `json:"cvc"`
 }

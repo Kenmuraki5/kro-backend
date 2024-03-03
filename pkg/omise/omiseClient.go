@@ -59,6 +59,7 @@ func CreateToken(client *omise.Client, payment restmodel.Payment) (string, error
 		Number:          payment.Number,
 		ExpirationMonth: payment.ExpirationMonth,
 		ExpirationYear:  payment.ExpirationYear,
+		SecurityCode:    payment.Cvc,
 	})
 	if err != nil {
 		return "", err
@@ -86,7 +87,7 @@ func CreateChargeBySource(client *omise.Client, sourceID string) error {
 func CreateChargeByToken(client *omise.Client, token string, orderId string, total int64) error {
 	result := &omise.Charge{}
 	err := client.Do(result, &operations.CreateCharge{
-		Amount:      total,
+		Amount:      total * 100,
 		Currency:    "thb",
 		Description: "KRO-Gamestore customer charge",
 		Card:        token,
