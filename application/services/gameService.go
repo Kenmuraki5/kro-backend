@@ -41,15 +41,6 @@ func (s *GameService) UpdateGame(game entity.Game) (*entity.Game, error) {
 	return updatedGame, nil
 }
 
-func (s *GameService) UpdateStockGame(order []restmodel.Order) error {
-	err := s.gameRepository.UpdateStockGame(order)
-	if err != nil {
-		return fmt.Errorf("failed to update Stock game : %w", err)
-	}
-
-	return err
-}
-
 func (s *GameService) ReleaseStockGame(order entity.Order) error {
 	err := s.gameRepository.ReleaseStockGame(order)
 	if err != nil {

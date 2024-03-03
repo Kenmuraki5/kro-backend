@@ -87,47 +87,6 @@ func (repo *DynamoDBGameRepository) UpdateGame(updatedGame entity.Game) (*entity
 	return &updatedGame, nil
 }
 
-// update stock game
-func (repo *DynamoDBGameRepository) UpdateStockGame(order []restmodel.Order) error {
-	transaction := make([]types.TransactWriteItem, 0, len(order))
-
-	for _, item := range order {
-		key, err := attributevalue.MarshalMap(map[string]string{
-			"Id": item.ProductId,
-		})
-		if err != nil {
-			return fmt.Errorf("failed to marshal key: %v", err)
-		}
-
-		update := &types.Update{
-			TableName:        aws.String("Games"),
-			Key:              key,
-			UpdateExpression: aws.String("SET Stock = if_not_exists(Stock, :initial) - :quantity"),
-			ExpressionAttributeValues: map[string]types.AttributeValue{
-				":quantity": &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", item.Quantity)},
-				":initial":  &types.AttributeValueMemberN{Value: "0"}},
-			ConditionExpression: aws.String("attribute_exists(Stock) and Stock >= :quantity"),
-		}
-
-		transaction = append(transaction, types.TransactWriteItem{Update: update})
-	}
-
-	if len(transaction) == 0 {
-		return nil
-	}
-
-	// commit  dtransaction
-	_, err := repo.Client.TransactWriteItems(context.TODO(), &dynamodb.TransactWriteItemsInput{
-		TransactItems: transaction,
-	})
-	if err != nil {
-		fmt.Printf("Failed to execute transaction: %v", err)
-		return fmt.Errorf("transaction failed: %v", err)
-	}
-
-	return nil
-}
-
 func (repo *DynamoDBGameRepository) ReleaseStockGame(order entity.Order) error {
 	key, err := attributevalue.MarshalMap(map[string]string{
 		"Id": order.ProductId,
