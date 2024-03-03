@@ -9,7 +9,6 @@ type GameService interface {
 	GetAllGames() ([]*entity.Game, error)
 	AddGame(restmodel.Game) (*restmodel.Game, error)
 	UpdateGame(entity.Game) (*entity.Game, error)
-	UpdateStockGame([]restmodel.Order) error
 	ReleaseStockGame(entity.Order) error
 	DeleteGame(string) error
 }

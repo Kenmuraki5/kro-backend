@@ -39,15 +39,6 @@ func (s *ConsoleService) UpdateConsole(console entity.Console) (*entity.Console,
 	return updatedConsole, nil
 }
 
-func (s *ConsoleService) UpdateStockConsole(order []restmodel.Order) error {
-	err := s.consoleRepository.UpdateStockConsole(order)
-	if err != nil {
-		return fmt.Errorf("failed to update Stock game : %w", err)
-	}
-
-	return err
-}
-
 func (s *ConsoleService) ReleaseStockConsole(order entity.Order) error {
 	err := s.consoleRepository.ReleaseStockConsole(order)
 	if err != nil {
