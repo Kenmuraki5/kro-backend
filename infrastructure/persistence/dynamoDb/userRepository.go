@@ -14,12 +14,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type DynamoDBCustomerRepository struct {
+type DynamoDBUserRepository struct {
 	Client *dynamodb.Client
 }
 
-func NewDynamoDBCustomerRepository(client *dynamodb.Client) *DynamoDBCustomerRepository {
-	return &DynamoDBCustomerRepository{Client: client}
+func NewDynamoDBUserRepository(client *dynamodb.Client) *DynamoDBUserRepository {
+	return &DynamoDBUserRepository{Client: client}
 }
 
 func hashPassword(password string) (string, error) {
@@ -30,18 +30,20 @@ func hashPassword(password string) (string, error) {
 	return string(hashedPassword), nil
 }
 
-func (repo *DynamoDBCustomerRepository) CreateUser(customer entity.Customer) (string, error) {
-	hashedPassword, err := hashPassword(customer.Password)
+func (repo *DynamoDBUserRepository) CreateUser(user restmodel.User) (string, error) {
+	hashedPassword, err := hashPassword(user.Password)
 	if err != nil {
 		return "", err
 	}
-	customer.Password = hashedPassword
-	item, err := attributevalue.MarshalMap(customer)
+	user.Password = hashedPassword
+	item, err := attributevalue.MarshalMap(user)
+	item["role"] = &types.AttributeValueMemberS{Value: "customer"}
+
 	if err != nil {
 		return "", err
 	}
 	input := &dynamodb.PutItemInput{
-		TableName:           aws.String("Customers"),
+		TableName:           aws.String("Users"),
 		Item:                item,
 		ConditionExpression: aws.String("attribute_not_exists(Email)"),
 	}
@@ -52,11 +54,11 @@ func (repo *DynamoDBCustomerRepository) CreateUser(customer entity.Customer) (st
 		return "", err
 	}
 
-	return customer.Email, nil
+	return user.Email, nil
 }
 
-func (repo *DynamoDBCustomerRepository) UpdateUser(customer restmodel.Customer, email string) (string, error) {
-	item, err := attributevalue.MarshalMap(customer)
+func (repo *DynamoDBUserRepository) UpdateUser(user restmodel.User, email string) (string, error) {
+	item, err := attributevalue.MarshalMap(user)
 	if err != nil {
 		return "", err
 	}
@@ -66,13 +68,14 @@ func (repo *DynamoDBCustomerRepository) UpdateUser(customer restmodel.Customer, 
 	}
 
 	input := &dynamodb.UpdateItemInput{
-		TableName:        aws.String("Customers"),
+		TableName:        aws.String("Users"),
 		Key:              key,
-		UpdateExpression: aws.String("SET FullName = :fullname, PhoneNumber = :phoneNumber, Address = :address"),
+		UpdateExpression: aws.String("SET FullName = :fullname, PhoneNumber = :phoneNumber, Address = :address, ImageProfile = :imageProfile"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":fullname":    item["FullName"],
-			":phoneNumber": item["PhoneNumber"],
-			":address":     item["Address"],
+			":fullname":     item["FullName"],
+			":phoneNumber":  item["PhoneNumber"],
+			":address":      item["Address"],
+			":imageProfile": item["ImageProfile"],
 		},
 	}
 
@@ -85,9 +88,9 @@ func (repo *DynamoDBCustomerRepository) UpdateUser(customer restmodel.Customer, 
 	return email, nil
 }
 
-func (repo *DynamoDBCustomerRepository) GetUserByEmail(email string) (*entity.Customer, error) {
+func (repo *DynamoDBUserRepository) GetUserByEmail(email string) (*entity.User, error) {
 	input := &dynamodb.GetItemInput{
-		TableName: aws.String("Customers"),
+		TableName: aws.String("Users"),
 		Key: map[string]types.AttributeValue{
 			"Email": &types.AttributeValueMemberS{Value: email},
 		},
@@ -103,17 +106,17 @@ func (repo *DynamoDBCustomerRepository) GetUserByEmail(email string) (*entity.Cu
 		return nil, errors.New("user not found")
 	}
 
-	var customer entity.Customer
-	err = attributevalue.UnmarshalMap(result.Item, &customer)
+	var user entity.User
+	err = attributevalue.UnmarshalMap(result.Item, &user)
 	if err != nil {
 		fmt.Println("Error unmarshaling DynamoDB result:", err)
 		return nil, fmt.Errorf("error unmarshaling DynamoDB result: %w", err)
 	}
 
-	return &customer, nil
+	return &user, nil
 }
 
-func (repo *DynamoDBCustomerRepository) AuthenticateUser(email, password string) (bool, error) {
+func (repo *DynamoDBUserRepository) AuthenticateUser(email, password string) (bool, error) {
 	result, err := repo.GetUserByEmail(email)
 	if err != nil {
 		return false, err

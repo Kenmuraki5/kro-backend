@@ -26,8 +26,8 @@ func NewGameController(service interfaces.GameService) *GameController {
 func (gc *GameController) SetupRoutes(router *gin.Engine) {
 	gameGroup := router.Group("/games")
 	{
-		gameGroup.Use(middleware.AuthMiddleware(&auth.AuthService{}))
 		gameGroup.GET("", gc.GetAllGamesHandler)
+		gameGroup.Use(middleware.AuthMiddleware(&auth.AuthService{}))
 		gameGroup.POST("/addGame", gc.AddGameHandler)
 		gameGroup.PUT("/updateGame", gc.UpdateGameHandler)
 		gameGroup.DELETE("/deleteGame/:id", gc.DeleteGame)
@@ -46,6 +46,15 @@ func (controller *GameController) GetAllGamesHandler(c *gin.Context) {
 }
 
 func (controller *GameController) AddGameHandler(c *gin.Context) {
+	role, exists := c.Get("role")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "User not found in context"})
+		return
+	}
+	if role != "kro-admin" {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "You don't have permission"})
+		return
+	}
 	var newGame restmodel.Game
 	if err := c.ShouldBindJSON(&newGame); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -62,6 +71,15 @@ func (controller *GameController) AddGameHandler(c *gin.Context) {
 }
 
 func (controller *GameController) UpdateGameHandler(c *gin.Context) {
+	role, exists := c.Get("role")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "User not found in context"})
+		return
+	}
+	if role != "kro-admin" {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "You don't have permission"})
+		return
+	}
 	var updatedGame entity.Game
 	if err := c.ShouldBindJSON(&updatedGame); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -79,7 +97,15 @@ func (controller *GameController) UpdateGameHandler(c *gin.Context) {
 
 func (controller *GameController) DeleteGame(c *gin.Context) {
 	id := c.Param("id")
-
+	role, exists := c.Get("role")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "User not found in context"})
+		return
+	}
+	if role != "kro-admin" {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "You don't have permission"})
+		return
+	}
 	err := controller.service.DeleteGame(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete game"})

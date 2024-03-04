@@ -44,6 +44,32 @@ func (repo *DynamoDBOrderRepository) GetAllOrders() ([]*entity.Order, error) {
 	return Orders, nil
 }
 
+func (repo *DynamoDBOrderRepository) GetOrdersByEmail(email string) ([]*entity.Order, error) {
+	input := &dynamodb.QueryInput{
+		TableName:              aws.String("Orders"),
+		KeyConditionExpression: aws.String("Email = :email"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":email": &types.AttributeValueMemberS{Value: email},
+		},
+	}
+	result, err := repo.Client.Query(context.TODO(), input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query DynamoDB table: %v", err)
+	}
+
+	var Orders []*entity.Order
+	for _, item := range result.Items {
+		var Order entity.Order
+		err := attributevalue.UnmarshalMap(item, &Order)
+		if err != nil {
+			return nil, err
+		}
+		Orders = append(Orders, &Order)
+	}
+
+	return Orders, nil
+}
+
 func (repo *DynamoDBOrderRepository) AddOrders(orders []restmodel.Order, orderId string) ([]*restmodel.Order, error) {
 	var addedOrders []*restmodel.Order
 	var writeRequests []types.WriteRequest

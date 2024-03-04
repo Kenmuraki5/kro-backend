@@ -6,34 +6,33 @@ import (
 
 	"github.com/Kenmuraki5/kro-backend.git/application/interfaces"
 	"github.com/Kenmuraki5/kro-backend.git/application/services/auth"
-	"github.com/Kenmuraki5/kro-backend.git/domain/entity"
 	"github.com/Kenmuraki5/kro-backend.git/domain/restmodel"
 	"github.com/Kenmuraki5/kro-backend.git/pkg/middleware"
 	"github.com/gin-gonic/gin"
 )
 
-type CustomerController struct {
-	service interfaces.CustomerService
+type UserController struct {
+	service interfaces.UserService
 }
 
-func NewCustomerController(service interfaces.CustomerService) *CustomerController {
-	return &CustomerController{
+func NewUserController(service interfaces.UserService) *UserController {
+	return &UserController{
 		service: service,
 	}
 }
 
 // set up router
-func (gc *CustomerController) SetupRoutes(router *gin.Engine) {
-	customerGroup := router.Group("/customers")
+func (gc *UserController) SetupRoutes(router *gin.Engine) {
+	customerGroup := router.Group("/users")
 	{
 		customerGroup.GET("", middleware.AuthMiddleware(&auth.AuthService{}), gc.GetUserByEmailHandler)
 		customerGroup.POST("/authentication", gc.Authentication)
-		customerGroup.POST("/addCustomer", gc.CreateUserHandler)
-		customerGroup.PUT("/updateCustomer", middleware.AuthMiddleware(&auth.AuthService{}), gc.UpdateUserHandler)
+		customerGroup.POST("/addUser", gc.CreateUserHandler)
+		customerGroup.PUT("/updateUser", middleware.AuthMiddleware(&auth.AuthService{}), gc.UpdateUserHandler)
 	}
 }
 
-func (controller *CustomerController) GetUserByEmailHandler(c *gin.Context) {
+func (controller *UserController) GetUserByEmailHandler(c *gin.Context) {
 	email, exists := c.Get("email")
 	if !exists {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "User not found in context"})
@@ -49,14 +48,14 @@ func (controller *CustomerController) GetUserByEmailHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func (controller *CustomerController) CreateUserHandler(c *gin.Context) {
-	var newCustomer entity.Customer
-	if err := c.ShouldBindJSON(&newCustomer); err != nil {
+func (controller *UserController) CreateUserHandler(c *gin.Context) {
+	var newUser restmodel.User
+	if err := c.ShouldBindJSON(&newUser); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	addedConsole, err := controller.service.AddUser(newCustomer)
+	addedConsole, err := controller.service.AddUser(newUser)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -65,19 +64,19 @@ func (controller *CustomerController) CreateUserHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, addedConsole)
 }
 
-func (controller *CustomerController) UpdateUserHandler(c *gin.Context) {
-	var updateCustomer restmodel.Customer
+func (controller *UserController) UpdateUserHandler(c *gin.Context) {
+	var updateUser restmodel.User
 	email, exists := c.Get("email")
 	if !exists {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "User not found in context"})
 		return
 	}
-	if err := c.ShouldBindJSON(&updateCustomer); err != nil {
+	if err := c.ShouldBindJSON(&updateUser); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	addedConsole, err := controller.service.UpdateUser(updateCustomer, email.(string))
+	addedConsole, err := controller.service.UpdateUser(updateUser, email.(string))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -86,7 +85,7 @@ func (controller *CustomerController) UpdateUserHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, addedConsole)
 }
 
-func (controller *CustomerController) Authentication(c *gin.Context) {
+func (controller *UserController) Authentication(c *gin.Context) {
 	var authRequest struct {
 		Email    string `json:"email" binding:"required"`
 		Password string `json:"password" binding:"required"`

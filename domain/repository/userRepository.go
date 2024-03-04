@@ -5,9 +5,9 @@ import (
 	"github.com/Kenmuraki5/kro-backend.git/domain/restmodel"
 )
 
-type CustomerRepository interface {
-	CreateUser(entity.Customer) (string, error)
-	UpdateUser(restmodel.Customer, string) (string, error)
-	GetUserByEmail(string) (*entity.Customer, error)
+type UserRepository interface {
+	CreateUser(restmodel.User) (string, error)
+	UpdateUser(restmodel.User, string) (string, error)
+	GetUserByEmail(string) (*entity.User, error)
 	AuthenticateUser(string, string) (bool, error)
 }

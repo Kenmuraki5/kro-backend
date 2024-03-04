@@ -16,7 +16,7 @@ func AuthMiddleware(authService *auth.AuthService) gin.HandlerFunc {
 			return
 		}
 
-		email, _, err := authService.ValidateToken(tokenString)
+		email, role, err := authService.ValidateToken(tokenString)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			return
@@ -24,7 +24,7 @@ func AuthMiddleware(authService *auth.AuthService) gin.HandlerFunc {
 
 		// Add the email to the context
 		c.Set("email", email)
-
+		c.Set("role", role)
 		c.Next()
 	}
 }

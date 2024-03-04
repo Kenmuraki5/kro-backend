@@ -24,8 +24,8 @@ type AuthService struct{}
 
 func (s *AuthService) GenerateToken(email string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": email,
-		"iss": "your-issuer",
+		"sub":  email,
+		"role": "customer",
 	})
 
 	signedToken, err := token.SignedString(secretKey)
@@ -36,7 +36,7 @@ func (s *AuthService) GenerateToken(email string) (string, error) {
 	return signedToken, nil
 }
 
-func (s *AuthService) ValidateToken(tokenString string) (string, *jwt.Token, error) {
+func (s *AuthService) ValidateToken(tokenString string) (string, string, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -46,17 +46,21 @@ func (s *AuthService) ValidateToken(tokenString string) (string, *jwt.Token, err
 	})
 
 	if err != nil {
-		return "", nil, err
+		return "", "", err
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		email, ok := claims["sub"].(string)
 		if !ok {
-			return "", nil, errors.New("user ID not found in token claims")
+			return "", "", errors.New("user ID not found in token claims")
+		}
+		role, ok := claims["role"].(string)
+		if !ok {
+			return "", "", errors.New("role not found in token claims")
 		}
 
-		return email, token, nil
+		return email, role, nil
 	}
 
-	return "", nil, errors.New("invalid token claims")
+	return "", "", errors.New("invalid token claims")
 }

@@ -26,8 +26,9 @@ func NewOrderController(service interfaces.OrderService) *OrderController {
 func (gc *OrderController) SetupRoutes(router *gin.Engine) {
 	OrderGroup := router.Group("/orders")
 	{
-		OrderGroup.Use(middleware.AuthMiddleware(&auth.AuthService{}))
 		OrderGroup.GET("", gc.GetAllOrdersHandler)
+		OrderGroup.GET("/userOrders", gc.GetOrdersByEmailHandler)
+		OrderGroup.Use(middleware.AuthMiddleware(&auth.AuthService{}))
 		OrderGroup.POST("/createPaymentToken", gc.CreatePaymentTokenHandler)
 		OrderGroup.POST("/addOrders", gc.AddOrderHandler)
 		OrderGroup.PUT("/updateOrder", gc.UpdateOrderHandler)
@@ -45,6 +46,24 @@ func (controller *OrderController) GetAllOrdersHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, Orders)
 }
+
+func (controller *OrderController) GetOrdersByEmailHandler(c *gin.Context) {
+	email, exists := c.Get("email")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "User not found in context"})
+		return
+	}
+	Orders, err := controller.service.GetOrdersByEmail(email.(string))
+
+	fmt.Println(Orders)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch Orders"})
+		return
+	}
+
+	c.JSON(http.StatusOK, Orders)
+}
+
 func (controller *OrderController) AddOrderHandler(c *gin.Context) {
 	var orderData struct {
 		NewOrder []restmodel.Order `json:"newOrder"`

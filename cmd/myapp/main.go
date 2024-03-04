@@ -19,10 +19,10 @@ func main() {
 		fmt.Printf("Error initializing DynamoDB client: %v\n", err)
 		return
 	}
-	//Customers
-	customerRepo := dynamoDb.NewDynamoDBCustomerRepository(dbClient.Client)
-	customerservice := services.NewCustomerService(customerRepo, auth.AuthService{})
-	customerController := rest.NewCustomerController(customerservice)
+	//users
+	userRepo := dynamoDb.NewDynamoDBUserRepository(dbClient.Client)
+	userservice := services.NewUserService(userRepo, auth.AuthService{})
+	userController := rest.NewUserController(userservice)
 
 	//Games
 	gameRepo := dynamoDb.NewDynamoDBGameRepository(dbClient.Client)
@@ -50,7 +50,7 @@ func main() {
 
 	gameController.SetupRoutes(router)
 	orderController.SetupRoutes(router)
-	customerController.SetupRoutes(router)
+	userController.SetupRoutes(router)
 	consoleController.SetupRoutes(router)
 
 	err = router.Run(":8080")

@@ -34,6 +34,10 @@ func (s *OrderService) GetAllOrders() ([]*entity.Order, error) {
 	return s.orderRepository.GetAllOrders()
 }
 
+func (s *OrderService) GetOrdersByEmail(email string) ([]*entity.Order, error) {
+	return s.orderRepository.GetOrdersByEmail(email)
+}
+
 func (s *OrderService) CreatePaymentToken(payment restmodel.Payment) (string, error) {
 	client, err := omise.GetOmiseClient()
 	if err != nil {

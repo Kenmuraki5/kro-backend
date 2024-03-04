@@ -9,23 +9,23 @@ import (
 	"github.com/Kenmuraki5/kro-backend.git/domain/restmodel"
 )
 
-type CustomerService struct {
-	customerRepository repository.CustomerRepository
-	authService        auth.AuthService
+type UserService struct {
+	userRepository repository.UserRepository
+	authService    auth.AuthService
 }
 
-func NewCustomerService(
-	customerRepository repository.CustomerRepository,
+func NewUserService(
+	userRepository repository.UserRepository,
 	authService auth.AuthService,
-) *CustomerService {
-	return &CustomerService{
-		customerRepository: customerRepository,
-		authService:        authService,
+) *UserService {
+	return &UserService{
+		userRepository: userRepository,
+		authService:    authService,
 	}
 }
 
-func (s *CustomerService) AddUser(user entity.Customer) (string, error) {
-	id, err := s.customerRepository.CreateUser(user)
+func (s *UserService) AddUser(user restmodel.User) (string, error) {
+	id, err := s.userRepository.CreateUser(user)
 	fmt.Println(id)
 	if err != nil {
 		return "", err
@@ -37,8 +37,8 @@ func (s *CustomerService) AddUser(user entity.Customer) (string, error) {
 	return token, nil
 }
 
-func (s *CustomerService) UpdateUser(user restmodel.Customer, email string) (string, error) {
-	id, err := s.customerRepository.UpdateUser(user, email)
+func (s *UserService) UpdateUser(user restmodel.User, email string) (string, error) {
+	id, err := s.userRepository.UpdateUser(user, email)
 	if err != nil {
 		return "", err
 	}
@@ -50,8 +50,8 @@ func (s *CustomerService) UpdateUser(user restmodel.Customer, email string) (str
 	return token, nil
 }
 
-func (s *CustomerService) GetUserByEmail(email string) (*entity.Customer, error) {
-	data, err := s.customerRepository.GetUserByEmail(email)
+func (s *UserService) GetUserByEmail(email string) (*entity.User, error) {
+	data, err := s.userRepository.GetUserByEmail(email)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update customer data: %w", err)
 	}
@@ -59,8 +59,8 @@ func (s *CustomerService) GetUserByEmail(email string) (*entity.Customer, error)
 	return data, err
 }
 
-func (s *CustomerService) AuthenticateUser(email, password string) (string, error) {
-	_, err := s.customerRepository.AuthenticateUser(email, password)
+func (s *UserService) AuthenticateUser(email, password string) (string, error) {
+	_, err := s.userRepository.AuthenticateUser(email, password)
 	if err != nil {
 		return "", fmt.Errorf(err.Error())
 	}
