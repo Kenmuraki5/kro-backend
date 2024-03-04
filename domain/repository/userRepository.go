@@ -9,5 +9,5 @@ type UserRepository interface {
 	CreateUser(restmodel.User) (string, error)
 	UpdateUser(restmodel.User, string) (string, error)
 	GetUserByEmail(string) (*entity.User, error)
-	AuthenticateUser(string, string) (bool, error)
+	AuthenticateUser(string, string) (string, error)
 }

@@ -22,10 +22,10 @@ func init() {
 
 type AuthService struct{}
 
-func (s *AuthService) GenerateToken(email string) (string, error) {
+func (s *AuthService) GenerateToken(email string, role string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub":  email,
-		"role": "customer",
+		"role": role,
 	})
 
 	signedToken, err := token.SignedString(secretKey)

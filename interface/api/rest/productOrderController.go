@@ -26,9 +26,9 @@ func NewOrderController(service interfaces.OrderService) *OrderController {
 func (gc *OrderController) SetupRoutes(router *gin.Engine) {
 	OrderGroup := router.Group("/orders")
 	{
+		OrderGroup.Use(middleware.AuthMiddleware(&auth.AuthService{}))
 		OrderGroup.GET("", gc.GetAllOrdersHandler)
 		OrderGroup.GET("/userOrders", gc.GetOrdersByEmailHandler)
-		OrderGroup.Use(middleware.AuthMiddleware(&auth.AuthService{}))
 		OrderGroup.POST("/createPaymentToken", gc.CreatePaymentTokenHandler)
 		OrderGroup.POST("/addOrders", gc.AddOrderHandler)
 		OrderGroup.PUT("/updateOrder", gc.UpdateOrderHandler)
@@ -37,6 +37,15 @@ func (gc *OrderController) SetupRoutes(router *gin.Engine) {
 }
 
 func (controller *OrderController) GetAllOrdersHandler(c *gin.Context) {
+	role, exists := c.Get("role")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "User not found in context"})
+		return
+	}
+	if role != "kro-admin" {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "You don't have permission"})
+		return
+	}
 	Orders, err := controller.service.GetAllOrders()
 	fmt.Println(Orders)
 	if err != nil {

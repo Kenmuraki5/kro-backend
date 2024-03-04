@@ -24,13 +24,14 @@ func NewUserService(
 	}
 }
 
+// register
 func (s *UserService) AddUser(user restmodel.User) (string, error) {
-	id, err := s.userRepository.CreateUser(user)
-	fmt.Println(id)
+	email, err := s.userRepository.CreateUser(user)
+	fmt.Println(email)
 	if err != nil {
 		return "", err
 	}
-	token, err := s.authService.GenerateToken(user.Email)
+	token, err := s.authService.GenerateToken(email, "customer")
 	if err != nil {
 		return "", err
 	}
@@ -38,16 +39,15 @@ func (s *UserService) AddUser(user restmodel.User) (string, error) {
 }
 
 func (s *UserService) UpdateUser(user restmodel.User, email string) (string, error) {
-	id, err := s.userRepository.UpdateUser(user, email)
+	email, err := s.userRepository.UpdateUser(user, email)
 	if err != nil {
 		return "", err
 	}
-	token, err := s.authService.GenerateToken(id)
 	if err != nil {
 		return "", err
 	}
 
-	return token, nil
+	return email, nil
 }
 
 func (s *UserService) GetUserByEmail(email string) (*entity.User, error) {
@@ -60,11 +60,12 @@ func (s *UserService) GetUserByEmail(email string) (*entity.User, error) {
 }
 
 func (s *UserService) AuthenticateUser(email, password string) (string, error) {
-	_, err := s.userRepository.AuthenticateUser(email, password)
+	role, err := s.userRepository.AuthenticateUser(email, password)
 	if err != nil {
 		return "", fmt.Errorf(err.Error())
 	}
-	token, err := s.authService.GenerateToken(email)
+	fmt.Println(role)
+	token, err := s.authService.GenerateToken(email, role)
 	if err != nil {
 		return "", fmt.Errorf(err.Error())
 	}

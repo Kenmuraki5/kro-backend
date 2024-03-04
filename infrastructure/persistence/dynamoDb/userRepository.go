@@ -116,25 +116,25 @@ func (repo *DynamoDBUserRepository) GetUserByEmail(email string) (*entity.User, 
 	return &user, nil
 }
 
-func (repo *DynamoDBUserRepository) AuthenticateUser(email, password string) (bool, error) {
+func (repo *DynamoDBUserRepository) AuthenticateUser(email, password string) (string, error) {
 	result, err := repo.GetUserByEmail(email)
+	fmt.Println("role:", result.Role)
 	if err != nil {
-		return false, err
+		return "", err
 	}
 
 	if result == nil {
-		return false, errors.New("user not found")
+		return "", errors.New("user not found")
 	}
 
 	hashedPassword := result.Password
 	if hashedPassword == "" {
-		return false, errors.New("password not found in user record")
+		return "", errors.New("password not found in user record")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	if err != nil {
-		return false, nil
+		return "", err
 	}
-
-	return true, nil
+	return result.Role, nil
 }
