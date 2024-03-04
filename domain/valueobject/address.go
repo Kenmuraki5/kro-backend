@@ -1,8 +1,9 @@
 package valueobject
 
 type Address struct {
-	Street     string `json:"street"`
-	City       string `json:"city"`
-	State      string `json:"state"`
-	PostalCode string `json:"postalCode"`
+	Address     string `json:"address"`
+	Province    string `json:"province"`
+	District    string `json:"district"`
+	SubDistrict string `json:"subDistrict"`
+	PostalCode  string `json:"postalCode"`
 }

@@ -7,7 +7,6 @@ import (
 	"github.com/Kenmuraki5/kro-backend.git/domain/entity"
 	"github.com/Kenmuraki5/kro-backend.git/domain/repository"
 	"github.com/Kenmuraki5/kro-backend.git/domain/restmodel"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 )
 
 type CustomerService struct {
@@ -51,7 +50,7 @@ func (s *CustomerService) UpdateUser(user restmodel.Customer, email string) (str
 	return token, nil
 }
 
-func (s *CustomerService) GetUserByEmail(email string) (*dynamodb.GetItemOutput, error) {
+func (s *CustomerService) GetUserByEmail(email string) (*entity.Customer, error) {
 	data, err := s.customerRepository.GetUserByEmail(email)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update customer data: %w", err)

@@ -5,9 +5,10 @@ import (
 )
 
 type Customer struct {
-	Email       string              `json:"email"`
-	Password    string              `json:"password"`
-	FullName    string              `json:"fullName"`
-	PhoneNumber string              `json:"phoneNumber"`
-	Address     valueobject.Address `json:"address"`
+	Email        string              `json:"email"`
+	Password     string              `json:"password"`
+	FullName     string              `json:"fullName"`
+	PhoneNumber  string              `json:"phoneNumber"`
+	Address      valueobject.Address `json:"address"`
+	ImageProfile []string            `json:"imageProfile"`
 }

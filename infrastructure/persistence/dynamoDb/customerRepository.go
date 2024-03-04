@@ -85,7 +85,7 @@ func (repo *DynamoDBCustomerRepository) UpdateUser(customer restmodel.Customer, 
 	return email, nil
 }
 
-func (repo *DynamoDBCustomerRepository) GetUserByEmail(email string) (*dynamodb.GetItemOutput, error) {
+func (repo *DynamoDBCustomerRepository) GetUserByEmail(email string) (*entity.Customer, error) {
 	input := &dynamodb.GetItemInput{
 		TableName: aws.String("Customers"),
 		Key: map[string]types.AttributeValue{
@@ -95,15 +95,22 @@ func (repo *DynamoDBCustomerRepository) GetUserByEmail(email string) (*dynamodb.
 
 	result, err := repo.Client.GetItem(context.TODO(), input)
 	if err != nil {
-		fmt.Println("Error getting user by ID:", err)
-		return nil, errors.New("error getting user by ID")
+		fmt.Println("Error getting user by email:", err)
+		return nil, fmt.Errorf("error getting user by email: %w", err)
 	}
 
 	if len(result.Item) == 0 {
 		return nil, errors.New("user not found")
 	}
 
-	return result, nil
+	var customer entity.Customer
+	err = attributevalue.UnmarshalMap(result.Item, &customer)
+	if err != nil {
+		fmt.Println("Error unmarshaling DynamoDB result:", err)
+		return nil, fmt.Errorf("error unmarshaling DynamoDB result: %w", err)
+	}
+
+	return &customer, nil
 }
 
 func (repo *DynamoDBCustomerRepository) AuthenticateUser(email, password string) (bool, error) {
@@ -116,18 +123,15 @@ func (repo *DynamoDBCustomerRepository) AuthenticateUser(email, password string)
 		return false, errors.New("user not found")
 	}
 
-	hashedPasswordAttribute, ok := result.Item["Password"]
-	if !ok {
+	hashedPassword := result.Password
+	if hashedPassword == "" {
 		return false, errors.New("password not found in user record")
 	}
-	hashedPassword, ok := hashedPasswordAttribute.(*types.AttributeValueMemberS)
-	if !ok {
-		return false, errors.New("invalid password format in user record")
-	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword.Value), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	if err != nil {
 		return false, nil
 	}
+
 	return true, nil
 }
