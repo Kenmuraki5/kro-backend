@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/Kenmuraki5/kro-backend.git/application/interfaces"
@@ -92,7 +91,6 @@ func (controller *UserController) Authentication(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&authRequest); err != nil {
-		fmt.Println("errorrrewgaawg")
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
