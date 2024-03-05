@@ -9,4 +9,5 @@ type Game struct {
 	ReleaseDate string   `json:"releaseDate"`
 	SupDevice   []string `json:"supDevice"`
 	Genre       []string `json:"genre"`
+	Brand       string   `json:"brand"`
 }
