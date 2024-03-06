@@ -118,7 +118,6 @@ func (repo *DynamoDBUserRepository) GetUserByEmail(email string) (*entity.User, 
 
 func (repo *DynamoDBUserRepository) AuthenticateUser(email, password string) (string, error) {
 	result, err := repo.GetUserByEmail(email)
-	fmt.Println("role:", result.Role)
 	if err != nil {
 		return "", err
 	}
@@ -126,7 +125,7 @@ func (repo *DynamoDBUserRepository) AuthenticateUser(email, password string) (st
 	if result == nil {
 		return "", errors.New("user not found")
 	}
-
+	fmt.Println("role:", result.Role)
 	hashedPassword := result.Password
 	if hashedPassword == "" {
 		return "", errors.New("password not found in user record")
