@@ -8,8 +8,8 @@ import (
 	"github.com/Kenmuraki5/kro-backend.git/application/services"
 	"github.com/Kenmuraki5/kro-backend.git/application/services/auth"
 	"github.com/Kenmuraki5/kro-backend.git/infrastructure/persistence/dynamoDb"
+	s3 "github.com/Kenmuraki5/kro-backend.git/infrastructure/persistence/s3upload"
 	"github.com/Kenmuraki5/kro-backend.git/interface/api/rest"
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,9 +19,19 @@ func main() {
 		fmt.Printf("Error initializing DynamoDB client: %v\n", err)
 		return
 	}
-	//users
+
+	//s3
+	s3Service := s3.NewS3Uploader()
+	// endpoint, err := s3Service.UploadFile("path/to/your/file.jpg")
+	// if err != nil {
+	// 	fmt.Printf("Error uploading to S3: %v\n", err)
+	// 	return
+	// }
+
+	// fmt.Println("Picture uploaded successfully to:", endpoint)
+	// //users
 	userRepo := dynamoDb.NewDynamoDBUserRepository(dbClient.Client)
-	userservice := services.NewUserService(userRepo, auth.AuthService{})
+	userservice := services.NewUserService(userRepo, auth.AuthService{}, s3Service)
 	userController := rest.NewUserController(userservice)
 
 	//Games
@@ -41,12 +51,12 @@ func main() {
 
 	router := gin.Default()
 
-	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"http://localhost:3000"}
-	config.AllowMethods = []string{"GET", "POST", "OPTIONS", "PATCH", "DELETE", "PATCH"}
-	config.AllowHeaders = []string{"Authorization", "Content-Type"}
-
-	router.Use(cors.New(config))
+	router.Use(func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+		c.Next()
+	})
 
 	gameController.SetupRoutes(router)
 	orderController.SetupRoutes(router)
