@@ -28,7 +28,6 @@ func (gc *UserController) SetupRoutes(router *gin.Engine) {
 		customerGroup.POST("/authentication", gc.Authentication)
 		customerGroup.POST("/addUser", gc.CreateUserHandler)
 		customerGroup.PUT("/updateUser", middleware.AuthMiddleware(&auth.AuthService{}), gc.UpdateUserHandler)
-		customerGroup.POST("/test", middleware.AuthMiddleware(&auth.AuthService{}), gc.UploadProfilePicture)
 	}
 }
 
@@ -101,25 +100,4 @@ func (controller *UserController) Authentication(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, token)
-}
-
-func (controller *UserController) UploadProfilePicture(c *gin.Context) {
-	email, exists := c.Get("email")
-	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "User not found in context"})
-		return
-	}
-
-	file, err := c.FormFile("profilePicture")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No file uploaded"})
-		return
-	}
-
-	endpoint, err := controller.service.UpdateProfilePicture(file, email.(string))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload profile picture"})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"message": "Profile picture uploaded successfully", "endpoint": endpoint})
 }

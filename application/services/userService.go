@@ -2,30 +2,25 @@ package services
 
 import (
 	"fmt"
-	"mime/multipart"
 
 	"github.com/Kenmuraki5/kro-backend.git/application/services/auth"
 	"github.com/Kenmuraki5/kro-backend.git/domain/entity"
 	"github.com/Kenmuraki5/kro-backend.git/domain/repository"
 	"github.com/Kenmuraki5/kro-backend.git/domain/restmodel"
-	s3 "github.com/Kenmuraki5/kro-backend.git/infrastructure/persistence/s3upload"
 )
 
 type UserService struct {
 	userRepository repository.UserRepository
 	authService    auth.AuthService
-	s3Service      s3.S3Service
 }
 
 func NewUserService(
 	userRepository repository.UserRepository,
 	authService auth.AuthService,
-	s3Service s3.S3Service,
 ) *UserService {
 	return &UserService{
 		userRepository: userRepository,
 		authService:    authService,
-		s3Service:      s3Service,
 	}
 }
 
@@ -75,19 +70,4 @@ func (s *UserService) AuthenticateUser(email, password string) (string, error) {
 		return "", fmt.Errorf(err.Error())
 	}
 	return token, nil
-}
-
-func (s *UserService) UpdateProfilePicture(file *multipart.FileHeader, objKey string) (string, error) {
-	uploadedFile, err := file.Open()
-	if err != nil {
-		return "", err
-	}
-	defer uploadedFile.Close()
-
-	endpoint, err := s.s3Service.UploadFile(uploadedFile, objKey)
-	if err != nil {
-		return "", err
-	}
-
-	return endpoint, nil
 }
