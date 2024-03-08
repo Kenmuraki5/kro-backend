@@ -5,8 +5,7 @@ type Game struct {
 	Description string   `json:"description"`
 	Stock       int      `json:"stock"`
 	Price       float64  `json:"price"`
-	Image       []string `json:"image"`
-	ReleaseDate string   `json:"releaseDate"`
+	Images      []string `json:"images"`
 	SupDevice   []string `json:"supDevice"`
 	Genre       []string `json:"genre"`
 	Brand       string   `json:"brand"`

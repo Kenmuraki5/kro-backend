@@ -3,6 +3,7 @@ package dynamoDb
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/Kenmuraki5/kro-backend.git/domain/entity"
 	"github.com/Kenmuraki5/kro-backend.git/domain/restmodel"
@@ -47,11 +48,17 @@ func (repo *DynamoDBConsoleRepository) GetAllConsoles() ([]*entity.Console, erro
 
 func (repo *DynamoDBConsoleRepository) AddConsole(console restmodel.Console) (*restmodel.Console, error) {
 	item, err := attributevalue.MarshalMap(console)
-	item["Id"] = &types.AttributeValueMemberS{Value: uuid.NewString()}
-	fmt.Print(item)
 	if err != nil {
 		return nil, err
 	}
+
+	item["Id"] = &types.AttributeValueMemberS{Value: uuid.NewString()}
+
+	item["ReleaseDate"] = &types.AttributeValueMemberS{
+		Value: time.Now().UTC().Format("2006-01-02T15:04:05Z"),
+	}
+
+	fmt.Print(item)
 
 	_, err = repo.Client.PutItem(context.Background(), &dynamodb.PutItemInput{
 		TableName: aws.String("Consoles"),

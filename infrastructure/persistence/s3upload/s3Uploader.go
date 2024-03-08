@@ -50,7 +50,7 @@ func S3uploader(c *gin.Context) {
 		o.UsePathStyle = true
 	})
 
-	bucketName := "don-gunpla-store"
+	bucketName := "kro-gamestore"
 
 	var imageUrls []string
 

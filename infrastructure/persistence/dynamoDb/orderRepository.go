@@ -45,16 +45,18 @@ func (repo *DynamoDBOrderRepository) GetAllOrders() ([]*entity.Order, error) {
 }
 
 func (repo *DynamoDBOrderRepository) GetOrdersByEmail(email string) ([]*entity.Order, error) {
-	input := &dynamodb.QueryInput{
-		TableName:              aws.String("Orders"),
-		KeyConditionExpression: aws.String("Email = :email"),
+	input := &dynamodb.ScanInput{
+		TableName:        aws.String("Orders"),
+		FilterExpression: aws.String("Email = :email"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":email": &types.AttributeValueMemberS{Value: email},
 		},
 	}
-	result, err := repo.Client.Query(context.TODO(), input)
+
+	result, err := repo.Client.Scan(context.TODO(), input)
 	if err != nil {
-		return nil, fmt.Errorf("failed to query DynamoDB table: %v", err)
+		fmt.Println("error scanning DynamoDB table:", err)
+		return nil, fmt.Errorf("failed to scan DynamoDB table: %v", err)
 	}
 
 	var Orders []*entity.Order

@@ -3,6 +3,7 @@ package dynamoDb
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/Kenmuraki5/kro-backend.git/domain/entity"
 	"github.com/Kenmuraki5/kro-backend.git/domain/restmodel"
@@ -48,6 +49,9 @@ func (repo *DynamoDBGameRepository) GetAllGames() ([]*entity.Game, error) {
 func (repo *DynamoDBGameRepository) AddGame(game restmodel.Game) (*restmodel.Game, error) {
 	item, err := attributevalue.MarshalMap(game)
 	item["Id"] = &types.AttributeValueMemberS{Value: uuid.NewString()}
+	item["ReleaseDate"] = &types.AttributeValueMemberS{
+		Value: time.Now().UTC().Format("2006-01-02T15:04:05Z"),
+	}
 	fmt.Print(item)
 	if err != nil {
 		return nil, err
