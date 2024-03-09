@@ -12,6 +12,6 @@ COPY . .
 
 RUN go build -o kro-backend .
 
-EXPOSE 8080
+EXPOSE 8082
 
 CMD ["./kro-backend"]
