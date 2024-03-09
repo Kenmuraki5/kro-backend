@@ -34,7 +34,6 @@ func (repo *DynamoDBConsoleRepository) GetAllConsoles() ([]*entity.Console, erro
 	}
 	var consoles []*entity.Console
 	for _, item := range result.Items {
-		fmt.Println(item)
 		var console entity.Console
 		err := attributevalue.UnmarshalMap(item, &console)
 		if err != nil {

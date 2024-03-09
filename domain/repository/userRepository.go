@@ -10,4 +10,5 @@ type UserRepository interface {
 	UpdateUser(restmodel.User, string) (string, error)
 	GetUserByEmail(string) (*entity.User, error)
 	AuthenticateUser(string, string) (string, error)
+	GetAllUser() ([]*entity.User, error)
 }

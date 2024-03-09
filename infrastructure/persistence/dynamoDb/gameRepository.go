@@ -34,7 +34,6 @@ func (repo *DynamoDBGameRepository) GetAllGames() ([]*entity.Game, error) {
 	}
 	var games []*entity.Game
 	for _, item := range result.Items {
-		fmt.Println(item)
 		var game entity.Game
 		err := attributevalue.UnmarshalMap(item, &game)
 		if err != nil {

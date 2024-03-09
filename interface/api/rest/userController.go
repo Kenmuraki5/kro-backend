@@ -22,13 +22,33 @@ func NewUserController(service interfaces.UserService) *UserController {
 
 // set up router
 func (gc *UserController) SetupRoutes(router *gin.Engine) {
-	customerGroup := router.Group("/users")
+	customerGroup := router.Group("/api/users")
 	{
 		customerGroup.GET("", middleware.AuthMiddleware(&auth.AuthService{}), gc.GetUserByEmailHandler)
 		customerGroup.POST("/authentication", gc.Authentication)
 		customerGroup.POST("/addUser", gc.CreateUserHandler)
 		customerGroup.PUT("/updateUser", middleware.AuthMiddleware(&auth.AuthService{}), gc.UpdateUserHandler)
+		customerGroup.GET("/alluser", middleware.AuthMiddleware(&auth.AuthService{}), gc.GetAllUserHandler)
 	}
+}
+
+func (controller *UserController) GetAllUserHandler(c *gin.Context) {
+	role, exists := c.Get("role")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "User not found in context"})
+		return
+	}
+	if role != "kro-admin" {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "You don't have permission"})
+		return
+	}
+	user, err := controller.service.GetAllUser()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
 }
 
 func (controller *UserController) GetUserByEmailHandler(c *gin.Context) {

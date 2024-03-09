@@ -53,7 +53,16 @@ func (s *UserService) UpdateUser(user restmodel.User, email string) (string, err
 func (s *UserService) GetUserByEmail(email string) (*entity.User, error) {
 	data, err := s.userRepository.GetUserByEmail(email)
 	if err != nil {
-		return nil, fmt.Errorf("failed to update customer data: %w", err)
+		return nil, fmt.Errorf("failed to get customer data: %w", err)
+	}
+
+	return data, err
+}
+
+func (s *UserService) GetAllUser() ([]*entity.User, error) {
+	data, err := s.userRepository.GetAllUser()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user data: %w", err)
 	}
 
 	return data, err

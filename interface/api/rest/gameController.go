@@ -24,7 +24,7 @@ func NewGameController(service interfaces.GameService) *GameController {
 
 // set up router
 func (gc *GameController) SetupRoutes(router *gin.Engine) {
-	gameGroup := router.Group("/games")
+	gameGroup := router.Group("/api/games")
 	{
 		gameGroup.GET("", gc.GetAllGamesHandler)
 		gameGroup.Use(middleware.AuthMiddleware(&auth.AuthService{}))

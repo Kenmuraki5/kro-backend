@@ -2,11 +2,13 @@ package dynamoDb
 
 import (
 	"context"
+	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/joho/godotenv"
 )
 
 type DynamoDBClient struct {
@@ -14,6 +16,10 @@ type DynamoDBClient struct {
 }
 
 func NewDynamoDBClient() (*DynamoDBClient, error) {
+	godotenv.Load()
+	accessKey := os.Getenv("DYNAMO_ACCESSKEY")
+	secretAccessKey := os.Getenv("DYNAMO_SECRETACCESSKEY")
+
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithRegion("localhost"),
 		config.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(
@@ -22,8 +28,8 @@ func NewDynamoDBClient() (*DynamoDBClient, error) {
 			})),
 		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
 			Value: aws.Credentials{
-				AccessKeyID:     "1cqeve", // ใส่ access key
-				SecretAccessKey: "xfpz7n", // ใส่ secret access key
+				AccessKeyID:     accessKey,       // ใส่ access key
+				SecretAccessKey: secretAccessKey, // ใส่ secret access key
 			},
 		}),
 	)

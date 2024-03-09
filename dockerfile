@@ -4,12 +4,14 @@ WORKDIR /app
 
 COPY ./cmd/myapp .
 
-copy go.mod go.sum .
+COPY go.mod go.sum ./
 
-COPY ./internal ./internal
+RUN go mod download
+
+COPY . .
 
 RUN go build -o kro-backend .
 
-EXPOSE 8060
+EXPOSE 8080
 
 CMD ["./kro-backend"]

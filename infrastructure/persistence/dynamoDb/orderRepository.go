@@ -32,7 +32,6 @@ func (repo *DynamoDBOrderRepository) GetAllOrders() ([]*entity.Order, error) {
 	}
 	var Orders []*entity.Order
 	for _, item := range result.Items {
-		fmt.Println(item)
 		var Order entity.Order
 		err := attributevalue.UnmarshalMap(item, &Order)
 		if err != nil {
