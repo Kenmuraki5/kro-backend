@@ -58,7 +58,7 @@ func main() {
 	userController.SetupRoutes(router)
 	consoleController.SetupRoutes(router)
 
-	err = router.Run(":8080")
+	err = router.Run(":8082")
 	if err != nil {
 		fmt.Printf("Error starting server: %v\n", err)
 	}
